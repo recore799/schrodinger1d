@@ -19,7 +19,7 @@ A Python library for solving the 1D Schrödinger equation using the **Numerov me
 ### Prerequisites
 
 - Python 3.8 or higher
-- `numpy`, `scipy`, and `matplotlib` (installed automatically if using `pip`)
+- `numpy`, `scipy`, and `matplotlib` 
 
   
 ### Generate Example Plots
