@@ -76,7 +76,7 @@ class SchrodingerSolver:
 
         return nodes
 
-    def _bracket_eigenvalue(self, target_nodes, E_min, E_max, num=50, tol=None):
+    def _bracket_eigenvalue(self, target_nodes, E_min, E_max, num=500, tol=None):
         """
         Scans energies between E_min and E_max to find an interavl where
         the number of nodes changes from target_nodes to something else.
