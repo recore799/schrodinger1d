@@ -1,0 +1,429 @@
+* Schrödinger Solver Functions
+  Esta sección contiene las funciones necesarias para resolver la ecuación de Schrödinger usando el método de Numerov.
+
+** Configuración de imports
+
+#+begin_src python :tangle schrodinger_solver.py
+import numpy as np
+from scipy.optimize import bisect
+#+end_src
+
+** Definición de la malla espacial
+#+begin_src python :tangle schrodinger_solver.py
+def setup_grid(xL, xR, n):
+    x, h = np.linspace(xL, xR, n, retstep=True, dtype=float)
+    return x, h
+#+end_src
+
+** Método de Numerov
+#+begin_src python :tangle schrodinger_solver.py
+def numerov(V, x, h, E):
+    psi = np.zeros_like(x)
+    psi[0] = 0.0
+    psi[1] = 1e-6
+
+    G = 2 * E - V(x)
+    F = 1 + (h**2 / 12) * G
+
+    for i in range(1, len(x) - 1):
+        psi[i + 1] = ((12 - 10 * F[i]) * psi[i] - F[i - 1] * psi[i - 1]) / F[i + 1]
+
+    return psi
+#+end_src
+
+** Contador de nodos
+#+begin_src python :tangle schrodinger_solver.py
+def count_nodes(psi, tol=1e-8):
+    nodes = 0
+    s_prev = np.sign(psi[2]) if abs(psi[2]) > tol else 0
+
+    for val in psi[3:]:
+        s = np.sign(val) if abs(val) > tol else 0
+        if s_prev == 0 and s != 0:
+            s_prev = s
+            continue
+        if s != 0 and s != s_prev:
+            nodes += 1
+            s_prev = s
+
+    return nodes
+#+end_src
+
+** Bracketing de eigenvalores
+#+begin_src python :tangle schrodinger_solver.py
+def bracket_eigenvalue(V, x, h, target_nodes, E_min, E_max, num=500, tol=1e-8):
+    energies = np.linspace(E_min, E_max, num)
+    prev_nodes = None
+    bracket = None
+
+    for E in energies:
+        psi = numerov(V, x, h, E)
+        nodes = count_nodes(psi, tol)
+        if prev_nodes is not None and prev_nodes == target_nodes and nodes != target_nodes:
+            bracket = (E_prev, E)
+            break
+        E_prev, prev_nodes = E, nodes
+    else:
+        raise ValueError(f"Could not bracket eigenvalue for {target_nodes} nodes")
+
+    print(f"Eigenenergy interval found ({bracket[0]:.6f},{bracket[1]:.6f})")
+    return bracket
+#+end_src
+
+** Evaluación de la condición de frontera
+#+begin_src python :tangle schrodinger_solver.py
+def boundary_condition(V, x, h, E):
+    psi = numerov(V, x, h, E)
+    return psi[-1], psi
+#+end_src
+
+** Resolución del estado cuántico
+#+begin_src python :tangle schrodinger_solver.py
+def solve_state(V, xL, xR, n, energy_level, E_min, E_max, tol=1e-8):
+    x, h = setup_grid(xL, xR, n)
+    bracket = bracket_eigenvalue(V, x, h, energy_level, E_min, E_max, tol=tol)
+
+    E = bisect(lambda E: boundary_condition(V, x, h, E)[0], bracket[0], bracket[1], xtol=tol)
+
+    psi = boundary_condition(V, x, h, E)[1]
+    norm = np.sqrt(np.trapezoid(psi**2, x))
+
+    return E, psi / norm
+#+end_src
+
+
+* Test it
+
+#+begin_src python :tangle ../examples/test2.py
+import sys
+import os
+
+# Add the src directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from schrodinger_solver import  solve_state
+import numpy as np
+
+def harmonic_oscillator(x):
+    return x**2
+
+def main():
+    # Define grid
+    xL, xR, n, tol = -5, 5, 501, 1e-8
+    x, h = np.linspace(xL, xR, n, retstep=True, dtype=float)
+
+    E = np.zeros(5)
+    psi = np.zeros((5, len(x)))
+
+    for i in range(5):
+        E[i], psi[i] = solve_state(harmonic_oscillator, xL, xR, n, i, E_min=0, E_max=10, tol=tol)
+
+    # Example: Print results
+    print("Energies:", E)
+    print("Wavefunctions shape:", psi.shape)
+
+if __name__ == "__main__":
+    main()
+
+#+end_src
+
+
+* Hydrogen Atom
+
+** Algorithm
+
+*** Libraries
+
+#+begin_src python :tangle numerov.py
+import numpy as np
+import sys
+
+#+end_src
+
+*** Do Mesh
+
+#+begin_src python :tangle numerov.py
+def do_mesh(mesh, zmesh, xmin, dx, rmax, r, sqr, r2):
+        for i in range(mesh + 1):
+                x = xmin + dx * i
+                r[i] = np.exp(x) / zmesh
+                sqr[i] = np.sqrt(r[i])
+                r2[i] = r[i] * r[i]
+
+#+end_src
+
+*** init energy bounds
+
+#+begin_src python :tangle numerov.py
+def init_energy_bounds(mesh, sqlhf, r2, vpot):
+    """Initialize energy bounds (elw and eup)."""
+    eup = vpot[mesh]
+    sqlhf_over_r2 = sqlhf / r2[:mesh+1]
+    sum_terms = sqlhf_over_r2 + vpot[:mesh+1]
+    elw = np.min(sum_terms)
+    return elw, eup
+
+#+end_src
+
+*** Compute f and icl
+
+#+begin_src python :tangle numerov.py
+def compute_f_and_icl(mesh, ddx12, sqlhf, r2, vpot, e):
+    """Compute the f function and find the classical turning point (icl)."""
+    f = np.zeros(mesh + 1)
+    icl = -1
+    f[0] = ddx12 * (sqlhf + r2[0] * (vpot[0] - e))
+    for i in range(1, mesh + 1):
+        f[i] = ddx12 * (sqlhf + r2[i] * (vpot[i] - e))
+        if f[i] == 0.0:
+            f[i] = 1e-20
+        if np.sign(f[i]) != np.sign(f[i-1]):
+            icl = i
+    return f, icl
+
+#+end_src
+*** Integration
+
+
+
+#+begin_src python :tangle numerov.py
+def outward_integration(icl, f, y, nodes):
+    """Perform outward integration and count the number of nodes."""
+    ncross = 0
+    for i in range(1, icl):
+        y[i+1] = ((12.0 - f[i] * 10.0) * y[i] - f[i-1] * y[i-1]) / f[i+1]
+        if y[i] * y[i+1] < 0:
+            ncross += 1
+
+    # DEBUG: Outward integration steps
+    # print(f"Outward y[icl]:{y[icl]:.6f}")
+    # for i in range(1, icl, 100):  # Sample every 100 steps
+    #     print(f"Step {i}: y={y[i]:.6f}, f={f[i]:.6f}")
+
+    return ncross, y[icl]
+
+def inward_integration(mesh, icl, f, y, dx):
+    """Perform inward integration."""
+    y[mesh] = dx
+    y[mesh-1] = (12.0 - f[mesh] * 10.0) * y[mesh] / f[mesh-1]
+    for i in range(mesh-1, icl, -1):
+        y[i-1] = ((12.0 - f[i] * 10.0) * y[i] - f[i+1] * y[i+1]) / f[i-1]
+        if y[i-1] > 1e10:
+            y[i-1:mesh+1] /= y[i-1]
+
+    # DEBUG: Inward integration steps
+    # print(f"Inward y[icl]:{y[icl]:.6f}")
+    # if kkk == 0:  # First iteration debug
+    #     print(f"First inward step: y[mesh]={y[mesh]:.6f}, y[mesh-1]={y[mesh-1]:.6f}")
+
+#+end_src
+
+*** Rescale and normalize
+
+
+#+begin_src python :tangle numerov.py
+def rescale_and_normalize(mesh, icl, y, fac, r2, dx):
+    """Rescale and normalize the wavefunction."""
+    # DEBUG: Rescaling parameters
+    # print(f"fac before rescaling: {fac:.6f}, y[icl]: {y[icl]:.6f}")
+
+    scaling_factor = fac / y[icl]
+    y[icl:mesh+1] *= scaling_factor
+
+    # DEBUG: Normalization parameters
+    # print(f"Rescaling factor: {scaling_factor:.6f}")
+    # print(f"Wavefunction after rescaling: y[icl]={y[icl]:.6f}, y[mesh]={y[mesh]:.6f}")
+
+    norm_sq = np.sum(y[1:mesh+1]**2 * r2[1:mesh+1] * dx)
+    norm = np.sqrt(norm_sq)
+    y[:mesh+1] /= norm
+
+    # DEBUG: Post-normalization values
+    # print(f"Normalization factor: {norm:.6f}")
+    # print(f"Wavefunction after normalization: y[icl]={y[icl]:.6f}")
+
+#+end_src
+
+
+*** Update energy
+
+#+begin_src python :tangle numerov.py
+def update_energy(icl, f, y, ddx12, dx, e, elw, eup):
+    """Compute the cusp condition and update the energy."""
+    i = icl
+    ycusp = (y[i-1] * f[i-1] + y[i+1] * f[i+1] + 10 * f[i] * y[i]) / 12.0
+    dfcusp = f[i] * (y[i] / ycusp - 1.0)
+    de = dfcusp / ddx12 * (ycusp ** 2) * dx
+
+    # DEBUG: Energy update parameters
+    # print(f"ycusp: {ycusp:.6f}, dfcusp: {dfcusp:.6f}, de: {de:.6f}")
+    # print(f"Energy terms: ddx12={ddx12:.6f}, ycusp^2={ycusp**2:.6f}")
+
+    if de > 0:
+        elw = e
+    elif de < 0:
+        eup = e
+    e += de
+    e = max(min(e, eup), elw)
+    return e, elw, eup, de
+
+#+end_src
+
+*** Solve sheq
+
+#+begin_src python :tangle numerov.py
+def solve_sheq(n, l, zeta, mesh, dx, r, sqr, r2, vpot, y):
+    """Solve the Schrödinger equation using the Numerov method."""
+    eps = 1e-10
+    n_iter = 100
+
+    ddx12 = dx**2 / 12.0
+    sqlhf = (l + 0.5)**2
+    x2l2 = 2 * l + 2
+
+    # Initialize energy bounds
+    elw, eup = init_energy_bounds(mesh, sqlhf, r2, vpot)
+    if eup - elw < eps:
+        sys.stderr.write(f"ERROR: solve_sheq: eup={eup} and elw={elw} are too close.\n")
+        sys.exit(1)
+
+    e = (elw + eup) * 0.5
+    de = 1e10  # Initial large value
+    converged = False
+
+    # DEBUG: Check energy bounds
+    # print(f"Initial energy bounds: elw={elw:.6f}, eup={eup:.6f}, e={e:.6f}")
+
+    for kkk in range(n_iter):
+        if abs(de) <= eps:
+            converged = True
+            break
+
+        # Compute f and find icl
+        f, icl = compute_f_and_icl(mesh, ddx12, sqlhf, r2, vpot, e)
+
+        # DEBUG: icl evolution
+        # print(f"Iteration {kkk+1}: icl={icl}, e={e:.6f}, de={de:.6f}")
+
+        if icl < 0 or icl >= mesh - 2:
+            sys.stderr.write(f"ERROR: solve_sheq: icl={icl} out of range (mesh={mesh})\n")
+            sys.exit(1)
+
+        f[:] = 1.0 - f[:]
+
+        # Initialize wavefunction
+        y[0] = (r[0] ** (l + 1)) * (1 - (2 * zeta * r[0]) / x2l2) / sqr[0]
+        y[1] = (r[1] ** (l + 1)) * (1 - (2 * zeta * r[1]) / x2l2) / sqr[1]
+
+        # DEBUG: Initial wavefunction values
+        # print(f"y[0]:{y[0]:.6f}, y[1]:{y[1]:.6f}")
+
+        # Outward integration
+        nodes = n - l - 1
+        ncross, fac = outward_integration(icl, f, y, nodes)
+        # DEBUG: Number of nodes
+        # print(f"Outward integration: ncross={ncross}, nodes={nodes}")
+
+        if ncross != nodes:
+            if ncross > nodes:
+                eup = e
+            else:
+                elw = e
+            e = (eup + elw) * 0.5
+            # DEBUG: New energy bounds
+            # print(f"Adjusting energy bounds: elw={elw:.6f}, eup={eup:.6f}, e={e:.6f}")
+            continue
+
+        # Inward integration
+        inward_integration(mesh, icl, f, y, dx)
+
+        # Rescale and normalize
+        rescale_and_normalize(mesh, icl, y, fac, r2, dx)
+
+        # Update energy
+        e, elw, eup, de = update_energy(icl, f, y, ddx12, dx, e, elw, eup)
+        # DEBUG: Energy updates
+        # print(f"Energy update: e={e:.6f}, de={de:.6f}, elw={elw:.6f}, eup={eup:.6f}")
+
+    if not converged:
+        error_msg = (f"ERROR: solve_sheq not converged after {n_iter} iterations.\n"
+                     f"Final de={de:.2e}, e={e:.6f}, nodes expected={nodes}, found={ncross}")
+        sys.stderr.write(error_msg + "\n")
+        sys.exit(1)
+    else:
+        print(f"Convergence achieved at iteration {kkk+1}, de = {de:.2e}")
+
+    return e
+#+end_src
+
+
+
+
+** Tests
+
+#+begin_src python :tangle ../examples/H_es.py
+
+import sys
+import os
+
+# Add the src directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from numerov import do_mesh, solve_sheq
+
+import numpy as np
+
+def vpot(zeta, r):
+    """Compute the Coulomb potential."""
+    return -2 * zeta / r
+
+def main():
+    zeta = 1  # Nuclear charge
+    zmesh = 1
+    rmax = 100  # Maximum radial distance
+    xmin = -8.0  # Logarithmic grid parameter
+    dx = 0.01  # Grid spacing
+
+    # Calculate mesh size
+    mesh = int((np.log(zmesh * rmax) - xmin) / dx)
+    mesh = max(mesh, 0)  # Ensure mesh is non-negative
+
+    # Initialize arrays
+    r = np.zeros(mesh + 1, dtype=float)  # Radial grid
+    sqr = np.zeros(mesh + 1, dtype=float)  # Square root of r
+    r2 = np.zeros(mesh + 1, dtype=float)  # r^2
+    y = np.zeros(mesh + 1, dtype=float)  # Wavefunction array
+
+    # Generate the logarithmic mesh
+    do_mesh(mesh, zmesh, xmin, dx, rmax, r, sqr, r2)
+
+    # Compute the potential
+    vpot_arr = vpot(zeta, r)
+
+    # Solve the Schrödinger equation for different n and l
+    n_max = 6  # Calculate up to n=5 (4 excited states)
+    l_max = 5  # Maximum angular momentum
+    energies = np.zeros((n_max, l_max + 1))  # Store energies for each (n, l)
+
+    for n in range(1, n_max + 1):  # n starts from 1
+        for l in range(n):  # l < n
+            y = np.zeros(mesh + 1, dtype=float)  # Fresh wavefunction array for each (n, l)
+            energy = solve_sheq(n, l, zeta, mesh, dx, r, sqr, r2, vpot_arr, y)
+            energies[n - 1, l] = energy  # Store energy
+
+    # Print energies in a readable format
+    print("Energy eigenvalues (n, l, E):")
+    for n in range(1, n_max + 1):
+        for l in range(n):
+            print(f"n={n}, l={l}: E = {energies[n - 1, l]:.6f}")
+
+    # Print energies grouped by n
+    print("\nEnergies grouped by n:")
+    for n in range(1, n_max + 1):
+        print(f"n={n}: {energies[n - 1, :n]}")
+
+if __name__ == "__main__":
+    main()
+
+
+#+end_src
