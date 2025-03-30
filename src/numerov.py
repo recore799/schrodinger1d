@@ -307,47 +307,54 @@ def main0():
     plt.show()
 
 
-
-
-
-
 def vpot(zeta,r):
     return -2 * zeta / r
+import numpy as np
 
 def main1():
-    zeta = 1
-    zmesh = 1
-    rmax = 100
-    xmin = -8.0
-    dx = 0.01
+    # Test for both zeta values
+    for zeta in [1, 2]:
+        print(f"\n===== Testing for zeta = {zeta} =====")
 
-    # Calculate mesh as integer to avoid float indices
-    mesh = int((np.log(zmesh * rmax) - xmin) / dx)
-    # Ensure mesh is at least 0 to prevent negative array sizes
-    mesh = max(mesh, 0)
+        zmesh = 1
+        rmax = 100
+        xmin = -8.0
+        dx = 0.01
 
-    # Initialize arrays with mesh+1 elements
-    r = np.zeros(mesh + 1, dtype=float)
-    sqr = np.zeros(mesh + 1, dtype=float)
-    r2 = np.zeros(mesh + 1, dtype=float)
-    y = np.zeros(mesh + 1, dtype=float)  # Wavefunction array
+        # Calculate mesh as integer to avoid float indices
+        mesh = int((np.log(zmesh * rmax) - xmin) / dx)
+        # Ensure mesh is at least 0 to prevent negative array sizes
+        mesh = max(mesh, 0)
 
-    # Generate the logarithmic mesh
-    do_mesh(mesh, zmesh, xmin, dx, rmax, r, sqr, r2)
+        # Initialize arrays with mesh+1 elements
+        r = np.zeros(mesh + 1, dtype=float)
+        sqr = np.zeros(mesh + 1, dtype=float)
+        r2 = np.zeros(mesh + 1, dtype=float)
+        y = np.zeros(mesh + 1, dtype=float)  # Wavefunction array
 
+        # Generate the logarithmic mesh
+        do_mesh(mesh, zmesh, xmin, dx, rmax, r, sqr, r2)
 
-    # Compute the potential
-    vpot_arr = vpot(zeta, r)
+        # Compute the potential
+        vpot_arr = vpot(zeta, r)
 
-    # Solve the Schrödinger equation for n=1, l=0
-    n = 1
-    l = 0
+        # Test different quantum numbers
+        max_n = 3  # Maximum principal quantum number to test
+        for n in range(1, max_n + 1):
+            # For each n, l can range from 0 to n-1
+            for l in range(0, n):
+                # Reinitialize wavefunction array for each calculation
+                y.fill(0)
 
-    e = solve_sheq(n, l, zeta, mesh, dx, r, sqr, r2, vpot_arr, y)
+                e = solve_sheq(n, l, zeta, mesh, dx, r, sqr, r2, vpot_arr, y)
 
-    print(f"Energy eigenvalue: {e:.6f}")
+                # Theoretical energy for comparison (in atomic units)
+                theoretical_e = -zeta**2 / (2 * n**2)
+                error = abs(e - theoretical_e)
 
-
+                print(f"n={n}, l={l}: Computed E = {e:.6f}, "
+                      f"Theoretical E = {theoretical_e:.6f}, "
+                      f"Error = {error:.2e}")
 
 
 if __name__ == "__main__":
