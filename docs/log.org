@@ -1,0 +1,157 @@
+#+setupfile: ~/uni/latex.org
+
+* Init
+
++ X
+#+begin_src python
+
+x, dx = np.linspace(0, xmax, mesh, retstep=true, dtype=float)
+
+#+end_src
+
+* Potential
+
++ Potential is even wrt x = 0
+
+  #+begin_src python
+
+vpot = x ** 2
+
+  #+end_src
+
+* Lower and Upper bounds for energy
+
++ The lowest eigenvalue E0 must satisfy E0 > min(V)
+
++ The highest bound state must stisfy En < max(V)
+
+We want an energy bracket where the eigenvalue is to be found, doing
+
+#+begin_src python
+
+e_lower = np.min(vpot)
+e_upper = np.max(vpot)
+
+#+end_src
+
+is enough, then the trial energy will be
+
+
+#+begin_src python
+
+e = 0.5 * (e_lower + e_upper)
+
+#+end_src
+
+* F function
+
+In order to find nodes we need only analyse the behaviour of what will become f_n
+
+#+begin_src python
+
+icl = -1
+f = (vpot - 2*e) * (dx**2 / 12)
+
+#+end_src
+
++ icl is the index of the classical turning point
++ f < 0 means classically allowed region
++ f > 0 means classically forbbiden region
+
+ #+begin_src python
+
+if f(i) == 0:
+    f(i) = 1e-20
+
+if f(i) * f(i-1) < 0:
+    icl = i
+
+ #+end_src
+
+
+Set f_n as required by the numerov algorithm and initialize the solution array
+
+#+begin_src python
+
+f = 1 - f
+psi = np.zeros(mesh, dtype=float)
+
+#+end_src
+
+* Integration
+
++ For even wavefunctions (with even number of nodes)
+  - Set an arbitrary positive value \( y_0 = 1 \)
+  - \( f_1 \) becomes, due to numerov
+
+    \[ y_1 = \frac{(12 - 10f_0y_0) - f_{-1}y_{-1}}{f_1}  \]
+
+    where \( f_{-1} \) (and \( y_{-1} \)) is technically the value of f at \( x_{-1} \) (no the last value of the array), but we can't have that in practice. Here we use symmetry about \( x_0 \) so that \( f_{-1} = f_1 \), then we get
+
+    \begin{align*}
+        y_1 &= \frac{(12 - 10f_0y_0) - f_1y_1}{f_1} \\
+        f_1y_1 + f_1y_1 &= (12 - 10f_0y_0) \\
+        y_1 &= \frac{(12 - 10f_0y_0)}{2f_1}
+    \end{align*}
+
++ When the wavefunction is odd, f(0) is always zero and we can set f(1) an arbitrary small number, we'll do \( \dd{x} \)
+
+#+begin_src python
+
+if nodes is even:
+    y(0) = 1
+    y(1) = 0.5 * (12 - f(0) * 10) * y(0) / f(1)
+else:
+    y(0) = 0
+    y(1) = dx
+
+#+end_src
+
+** Outward integration
+
++ Integrate in \( [0,icl-1] \)
++ Count number of crossings while integrating
+
+  #+begin_src python
+
+ncross = 0
+for i in range(icl-1):
+    y(i+1) = ((12 - f(i) * 10) * y(i) - f(i-1) * y(i-1)) / f(i+1)
+    if y(i) * y(i+1) < 0:
+        ncross += 1
+
+yicl = y(icl)
+
+if nodes is even:
+    ncross = 2*ncross
+else:
+    ncross = 2*ncross+1
+  #+end_src
+
+
+
+** Check that number of crossings is right
+
+Since crossings should only occur before the classical turning point, after integration up to icl is done, we can check that we have the correct number of crossings and then proceed to the outward integration
+
+#+begin_src python
+
+if ncross != nodes:
+    if ncross > nodes:
+        eup = e
+    else:
+        elw = e
+    e = 0.5 * (eup + elw)
+
+#+end_src
+
+** Outward integration
+
++ First set the last two points
+
+#+begin_src python
+
+y(mesh) = dx
+y(mesh-1) = ((12 - 10 * f(mesh)) * y(mesh)) / f(mesh-1)
+
+#+end_src

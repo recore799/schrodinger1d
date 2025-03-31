@@ -1,0 +1,165 @@
+% Created 2025-03-29 Sat 13:25
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{physics}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1.5cm}
+\author{Rafael Obed Egurrola Corella}
+\date{\today}
+\title{Metodo de Numerov}
+\hypersetup{
+ pdfauthor={Rafael Obed Egurrola Corella},
+ pdftitle={Metodo de Numerov},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 31.0.50 (Org mode 9.7.22)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Ecuación de Schrödinger unidimensional, independiente del tiempo}
+\label{sec:org3831300}
+
+\[ \frac{\partial^{2}\psi}{\partial x^2} = - \frac{2m}{\hbar^2}(E - V(x))\psi \]
+\subsection{Oscilador Harmonico}
+\label{sec:orgae8bd12}
+
+\begin{itemize}
+\item Potencial \(V(x) = - \frac{1}{2}K x^2\)
+\end{itemize}
+\subsection{Unidades adimensionales}
+\label{sec:org80be3a4}
+
+\begin{itemize}
+\item Variable adimensional \(\xi\)
+\item Longitud \(\lambda\) de modo que \(x = \lambda \xi\)
+\end{itemize}
+
+\[ \pdv[2]{\psi}{(\lambda \xi)} = \qty( - \frac{2m E }{\hbar^2} + \frac{mK \lambda^2}{\hbar^2} \xi^2  )\psi \]
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m E \lambda^{2}}{\hbar^2} + \frac{mK \lambda^4}{\hbar^2} \xi^2  )\psi \]
+
+\begin{itemize}
+\item Hacemos \(mK\lambda^4 /\hbar^2 = 1\), de donde
+
+\[ \lambda = (\hbar^2/mK)^{1/4} \]
+
+\item Relacionamos la frecuencia angular del oscilador con la constante de fuerza
+
+\[ \omega = \sqrt{\frac{K}{m}} \implies K = m\omega^2 \]
+
+\item La variable adimensional queda
+
+\[ \lambda\xi = x \implies \xi=\qty(\frac{mK}{\hbar^2})^{1/4} x = \qty(\frac{m \omega}{\hbar})^{1/2} x  \]
+
+\item Introducimos la energia adimensional \(\epsilon\)
+
+\[ \epsilon = \frac{2E}{\hbar \omega} \]
+
+\item Sustituyendo estas expresiones en la ecuacion de Schrödinger
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m E \lambda^{2}}{\hbar^2} + \frac{mK \lambda^4}{\hbar^2} \xi^2  )\psi \]
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m (\epsilon \hbar \omega/2) (\hbar^2/m^2\omega^2)^{1/2}}{\hbar^2} +  \xi^2  )\psi \]
+\end{itemize}
+
+
+\[ \pdv[2]{\psi}{\xi} = (\epsilon - \xi^2)\psi \]
+\section{Método de Numerov}
+\label{sec:org460d9ed}
+
+Método numérico desarrollado por el astrónomo ruso Boris Vasilyevich Numerov en la década de 1910. Se basa en desarrollar la expansión de Taylor de una función \(y : I \subset \mathbb{R} \to \mathbb{R}\) alrededor de un punto \(x_0 \in I\), donde \(y\) es solución a la ecuación diferencial de segundo orden
+
+\[ y''(x) = - g(x)y(x) + s(x), \]
+
+con \(g: I \to \mathbb{R}\) y \(s: I \to \mathbb{R}\) como funciones conocidas, definidas en el mismo intervalo \(I\) que \(y\). Para que la expansión de Taylor sea válida hasta el orden requerido, se exige que \(y\) sea al menos \(C^4\) i.e. cuatro veces diferenciable. Además, \(g\) y \(s\) deben ser funciones suficientemente suaves e.g. continuas, para garantizar la existencia de una solución.
+
+El método de Numerov sigue un esquema de diferencias finitas, por lo que comenzamos con una expansión de Taylor, a quinto órden. Para un paso adelante \((x= x_{0} + \Delta x)\) y un paso atrás \((x=x_{0} - \Delta x)\), se tiene
+
+\[ y(x_{0} + \Delta x ) = y(x_{0}) + y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 + \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 + \frac{y^{(5)}(x_0)}{5!} + \order{\Delta x^6}, \]
+
+\[ y(x_{0} - \Delta x ) = y(x_{0}) - y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 - \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 - \frac{y^{(5)}(x_0)}{5!} + \order{\Delta x^6}. \]
+
+Se define una malla uniforme \(x_n = x_0 + n\Delta x\) y se denota:
+
+\begin{itemize}
+\item \(y(x_n) \equiv y_n\) (valores de la funcion en puntos de la malla).
+\item \(y(x_n \pm \Delta x) \equiv y_{n \pm 1}\) (puntos adyacentes).
+\end{itemize}
+
+Así, las expansiones se reescriben como:
+
+\[ y_{n+1} = y_n + y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 + \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 + \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{\Delta x^6} \]
+
+\[ y_{n-1} = y_n - y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 - \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 - \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{\Delta x^6} \]
+
+
+Al sumar ambos desarrolos se obtiene
+
+\[ y_{n+1} + y_{n-1} = 2y_n + y_n''(\Delta x)^2 + \frac{1}{12} y_n'''' (\Delta x)^4 + \mathcal{O} [(\Delta x)^6] \]
+
+Al discretizar la ecuacion diferencial original, se tiene
+
+\[ z_n \equiv y'' = - g_ny_n + s_n, \]
+
+y aplicamos la expresion obtenida
+
+\[ z_{n+1} + z_{n-1} = 2z_n + z_n'' (\Delta x)^2 + \mathcal{O}[(\Delta x)^4] \]
+
+Esta es una expresion para la segunda derivada desarrollando en Taylor hasta tercer orden, de modo que, ademas, se obtiene una expresion para la cuarta derivada
+
+\[ z''_n = \frac{z_{n+1}+z_{n-1}-2z_n}{(\Delta x)^2} + \mathcal{O}[(\Delta x)^2] = y_n''''. \]
+
+sustituyendo en la expresion
+
+\[ y_{n+1} + y_{n-1} = 2y_n + y_n''(\Delta x)^2 + \frac{1}{12} y_n'''' (\Delta x)^4 + \mathcal{O} [(\Delta x)^6] \]
+
+se obtiene la formula de Numerov
+
+ \begin{align*}
+  &y_{n+1} = 2y_n - y_{n-1} + (z_n)(\Delta x)^2 + \frac{1}{12}(z_{n+1}+z_{n-1}-2z_n)(\Delta x)^2 + \order{(\Delta x)^6} \\
+  &y_{n+1} =  2y_n -y_{n-1} + (-g_ny_n + s_n) (\Delta x)^2 + \frac{1}{12}[(-g_{n+1}y_{n+1}+s_{n+1})+(-g_{n-1}y_{n-1}+s_{n-1})-2(-g_ny_n+s_n)](\Delta x)^2 + \order{(\Delta x)^6} \\
+  &y_{n+1}\qty[1 + \frac{1}{12}g_{n+1}(\Delta x)^2] = 2y_n \qty[1+\qty(\frac{-g_n}{2}+\frac{g_n}{12})(\Delta x)^2] -y_{n-1}\qty[1+\frac{1}{12}g_{n-1}(\Delta x)^2] + \frac{1}{12}(s_{n+1}+10s_n+s_{n-1})(\Delta x)^2 + \order{(\Delta x)^6} \\
+  &y_{n+1}\qty[1 + \frac{1}{12}g_{n+1}(\Delta x)^2] = 2y_n \qty[1-\frac{5}{12}g_n(\Delta x)^2] -y_{n-1}\qty[1+\frac{1}{12}g_{n-1}(\Delta x)^2] + \frac{1}{12}(s_{n+1}+10s_n+s_{n-1})(\Delta x)^2 + \order{(\Delta x)^6}
+\end{align*}
+
+que nos permite propagar la sucesion \(y_n\) conociendo los primeros dos valores \(y_0\) y \(y_1\). Las ecauciones que se van a resolver por medio de esta formula cuentan con \(s(x) = 0\), entonces podemos omitir los terminos de \(s_n\).
+
+\begin{itemize}
+\item Podemos simplificar la formula por medio de la cantidad
+
+\[ f_n \equiv 1 + \frac{1}{12}g_n(\Delta x)^2, \]
+
+haciendo
+
+\begin{align*}
+    f_n - 1 &= \frac{1}{12}g_n(\Delta x)^2 \\
+    1-5(f_n -1) &= 1-\frac{5}{12}g_n(\Delta x)^2 \\
+    6-5f_n &= 1-\frac{5}{12}g_n(\Delta x)^2 \\
+    12-10f_n &= 2\qty(1-\frac{5}{12})g_n(\Delta x)^2
+\end{align*}
+
+se reescribe la formula de Numerov
+
+\[ y_{n+1} = \frac{(12-10f_n)y_n-f_{n-1}y_{n-1}}{f_{n+1}} \]
+\end{itemize}
+\end{document}
