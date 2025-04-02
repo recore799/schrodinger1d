@@ -35,7 +35,7 @@ def main():
     fig, ax = plt.subplots()
     # Start with the initial linear combination at t=0.
     psi_initial = np.sum(coeffs[:, None] * psi, axis=0)
-    line, = ax.plot(integrator.x, np.real(psi_initial), 'b-', lw=2)
+    line, = ax.plot(integrator.x, psi_initial, 'b-', lw=2)
     ax.set_xlim(integrator.x[0], integrator.x[-1])
     ax.set_ylim(-1.5, 1.5)
     ax.set_xlabel("x")
@@ -57,7 +57,7 @@ def main():
     frames = np.linspace(0, 20, 400)
     ani = animation.FuncAnimation(fig, update, frames=frames, interval=50, blit=True)
     # Save the animation to an MP4 file with 30 frames per second.
-    ani.save("traveling_wave.mp4", writer="ffmpeg", fps=60)
+    #ani.save("traveling_wave.mp4", writer="ffmpeg", fps=60)
     plt.show()
 
 

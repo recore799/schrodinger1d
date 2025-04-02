@@ -18,7 +18,7 @@ def main():
     plt.style.use("seaborn-v0_8-darkgrid")
     plt.rcParams.update({"font.size": 12, "figure.autolayout": True})
 
-    integrator = SchrodingerSolver(V=harmonic_oscillator)
+    integrator = SchrodingerSolver(V=harmonic_oscillator, xL=-5, xR=5, n=501)
 
     energies = np.zeros(5)
     psi = np.zeros((5, len(integrator.x)))
