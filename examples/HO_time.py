@@ -1,45 +1,60 @@
 import sys
 import os
-import time
+import timeit
 import numpy as np
 
+# Add src directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from numerov import numerov0, harmonic_oscillator
+from numerov import (
+    # numerov0,  # Slow implementation (commented out)
+    harmonic_oscillator,  # Current fast implementation
+)
 
-# Number of runs for averaging
-n_runs = 10
+from numerov_debug import harmonic_oscillator_test
+
+# Test parameters
+n_states = 10  # Number of states to compute
+n_runs = 5     # Number of runs for averaging
 
 # Initialize energy arrays
-energies1 = np.zeros(10)
-energies2 = np.zeros(10)
+energies_class = np.zeros(n_states)  # Unused (commented out)
+energies_current = np.zeros(n_states)
+energies_modular = np.zeros(n_states)
 
-# --- First Implementation ---
-print("-------------------- First Implementation ----------")
-start_time1 = time.time()
+# ---- (1) Class-Based Solver (Slow) ----
+# Uncomment only if you want to test it despite slowness
+# print("Class-based implementation (slow):")
+# class_solver = ClassBasedSolver(V=lambda x: x**2)
+# start_time = timeit.default_timer()
+# for i in range(n_states):
+#     energies_class[i] = class_solver.solve_state(i)
+#     print(f"State {i}: {energies_class[i]:.8f}")
+# class_time = timeit.default_timer() - start_time
 
-for i in range(10):
-    energies1[i] = harmonic_oscillator(nodes=i)
-    print(f"Energy for state {i}: {energies1[i]:.8f}")
+# ---- (2) Current Fast Implementation ----
+print("\nCurrent implementation (fast, non-modular):")
+start_time = timeit.default_timer()
+for i in range(n_states):
+    energies_current[i] = harmonic_oscillator(nodes=i)
+    print(f"State {i}: {energies_current[i]:.8f}")
+current_time = timeit.default_timer() - start_time
 
-end_time1 = time.time()
-print(f"Total time (Implementation 1): {end_time1 - start_time1:.6f} seconds")
+# ---- (3) Modular Implementation ----
+print("\nModular implementation (test):")
+start_time = timeit.default_timer()
+for i in range(n_states):
+    energies_modular[i] = harmonic_oscillator_test(nodes=i)
+    print(f"State {i}: {energies_modular[i]:.8f}")
+modular_time = timeit.default_timer() - start_time
 
-# --- Second Implementation ---
-print("\n-------------------- Second Implementation ----------")
-integrator = numerov0(V=lambda x: x**2)  # Define potential
+# ---- Summary ----
+print("\n------ Performance Summary ------")
+# print(f"Class-based: {class_time:.4f} sec")  # Uncomment if needed
+print(f"Current (non-modular): {current_time:.4f} sec")
+print(f"Modular: {modular_time:.4f} sec")
+print(f"Speed ratio (Modular/Current): {modular_time/current_time:.2f}x")
 
-start_time2 = time.time()
-
-for i in range(10):
-    energies2[i] = integrator.solve_state(energy_level=i, E_min=0, E_max=10)
-    print(f"Energy for state {i}: {energies2[i]:.8f}")
-
-end_time2 = time.time()
-print(f"Total time (Implementation 2): {end_time2 - start_time2:.6f} seconds")
-
-# --- Summary ---
-print("\n----------------- Performance Summary -----------------")
-print(f"Implementation 1 (harmonic_oscillator): {end_time1 - start_time1:.6f} s")
-print(f"Implementation 2 (numerov0): {end_time2 - start_time2:.6f} s")
-print(f"Speed ratio (Impl2/Impl1): {(end_time2 - start_time2)/(end_time1 - start_time1):.2f}x")
+# Verify results match (optional)
+assert np.allclose(energies_current, energies_modular), "Results differ!"
+print("\n✅ Results match between implementations.")
