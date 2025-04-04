@@ -7,7 +7,7 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from numerov import (
-    # numerov0,  # Slow implementation (commented out)
+    numerov0,  # Slow implementation (commented out)
     harmonic_oscillator,  # Current fast implementation
 )
 
@@ -15,20 +15,20 @@ from numerov_debug import harmonic_oscillator_test
 
 # Test parameters
 n_states = 10  # Number of states to compute
-n_runs = 5     # Number of runs for averaging
+# n_runs = 5     # Number of runs for averaging
 
 # Initialize energy arrays
-energies_class = np.zeros(n_states)  # Unused (commented out)
+# energies_class = np.zeros(n_states)  # Unused (commented out)
 energies_current = np.zeros(n_states)
 energies_modular = np.zeros(n_states)
 
 # ---- (1) Class-Based Solver (Slow) ----
 # Uncomment only if you want to test it despite slowness
 # print("Class-based implementation (slow):")
-# class_solver = ClassBasedSolver(V=lambda x: x**2)
+# class_solver = numerov0(V=lambda x: x**2)
 # start_time = timeit.default_timer()
 # for i in range(n_states):
-#     energies_class[i] = class_solver.solve_state(i)
+#     energies_class[i] = class_solver.solve_state(i, 0, 10)
 #     print(f"State {i}: {energies_class[i]:.8f}")
 # class_time = timeit.default_timer() - start_time
 
@@ -36,7 +36,7 @@ energies_modular = np.zeros(n_states)
 print("\nCurrent implementation (fast, non-modular):")
 start_time = timeit.default_timer()
 for i in range(n_states):
-    energies_current[i] = harmonic_oscillator(nodes=i)
+    energies_current[i] = harmonic_oscillator_test(nodes=i)
     print(f"State {i}: {energies_current[i]:.8f}")
 current_time = timeit.default_timer() - start_time
 
@@ -44,7 +44,7 @@ current_time = timeit.default_timer() - start_time
 print("\nModular implementation (test):")
 start_time = timeit.default_timer()
 for i in range(n_states):
-    energies_modular[i] = harmonic_oscillator_test(nodes=i)
+    energies_modular[i] = harmonic_oscillator(nodes=i)
     print(f"State {i}: {energies_modular[i]:.8f}")
 modular_time = timeit.default_timer() - start_time
 

@@ -5,7 +5,7 @@ import os
 # Add the src directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from numerov import do_mesh, solve_sheq
+from numerov_debug import do_mesh, solve_sheq
 
 import numpy as np
 
@@ -31,7 +31,7 @@ def main():
     y = np.zeros(mesh + 1, dtype=float)  # Wavefunction array
 
     # Generate the logarithmic mesh
-    do_mesh(mesh, zmesh, xmin, dx, rmax, r, sqr, r2)
+    do_mesh(mesh, zmesh, xmin, dx, r, sqr, r2)
 
     # Compute the potential
     vpot_arr = vpot(zeta, r)

@@ -6,7 +6,7 @@ import os
 # Add the src directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from schrodinger1d import SchrodingerSolver
+from numerov import numerov0
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ def harmonic_oscillator(x):
 
 def main():
     # Create an instance of your solver (adjust the class name if needed)
-    integrator = SchrodingerSolver(V=harmonic_oscillator, xL=-5, xR=5, n=501, tol=1e-7)
+    integrator = numerov0(V=harmonic_oscillator, xL=-5, xR=5, n=501, tol=1e-7)
 
     num_states = 10
     E = np.zeros(num_states)
