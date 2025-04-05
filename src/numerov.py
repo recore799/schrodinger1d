@@ -216,83 +216,32 @@ def scale_normalize(psi, psi_icl, icl, r):
 
 ###############################################################################
 
+import timeit
 
+def test_hydrogen_levels():
+    print("\nHydrogen Atom Energy Levels (n=1 to 10, l=0):")
+    print("--------------------------------------------")
+    print(" n | Computed E (a.u.) | Expected E (a.u.) | Error")
+    print("---|-------------------|-------------------|-------")
 
+    Z = 1
+    l = 0
+    xmin = -8.0
+    xmax = np.log(100.0)
+    mesh = 1260
 
+    for n in range(1, 7):
+        start_time = timeit.default_timer()
+        e_computed = hydrogen_atom(n, l, Z, xmin, xmax, mesh)
+        e_expected = -Z**2 / (2*n**2)
+        error = abs(e_computed - e_expected)
+        elapsed = timeit.default_timer() - start_time
 
+        print(f"{n:2} | {e_computed:.8f}        | {e_expected:.8f}        | {error:.2e} | {elapsed:.4f} sec")
 
-
-
-def V_ho(x):
-    return x**2
-
-def main0():
-
-    integrator = numerov0(V=V_ho, xL=-5, xR=5)
-
-    # Find the ground state (0 nodes)
-    E0, psi0 = integrator.solve_state(energy_level=0, E_min=0, E_max=10)
-    nodes0 = integrator.count_nodes(psi0)
-
-    print(f"Ground state energy: {E0:.6f}")
-    print(f"Ground state node count: {nodes0}")
-
-    # Plot the ground state wavefunction
-    plt.figure(figsize=(8, 4))
-    plt.plot(integrator.x, psi0, label='Ground State (0 nodes)')
-    plt.title('Ground State Wavefunction')
-    plt.xlabel('x')
-    plt.ylabel(r'$\psi(x)$')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-def vpot(zeta,r):
-    return -2 * zeta / r
-import numpy as np
-
-def main1():
-    # Test for both zeta values
-    for zeta in [1, 2]:
-        print(f"\n===== Testing for zeta = {zeta} =====")
-
-        # Parameters
-        mesh = 1000
-        xmin = -8.0          # r_min = e^{-8} ≈ 3.3e-5 a.u.
-        xmax = np.log(100.0)  # r_max = 100 a.u.
-        Z = 1.0               # Hydrogen
-
-        # Logarithmic mesh in x
-        x, dx = np.linspace(xmin, xmax, mesh, retstep=True)
-
-        # Physical mesh in r
-        r = np.exp(x) / Z
-
-        # Step sizes in r (for integrations or derivatives)
-        dr = r * dx
-
-        # Compute the potential
-        vpot_arr = vpot(zeta, r)
-
-        # Test different quantum numbers
-        max_n = 3  # Maximum principal quantum numb er to test
-        for n in range(1, max_n + 1):
-            # For each n, l can range from 0 to n-1
-            for l in range(0, n):
-                # Reinitialize wavefunction array for each calculation
-                y.fill(0)
-
-                e = solve_sheq(n, l, zeta, mesh, dx, r, sqr, r2, vpot_arr, y)
-
-                # Theoretical energy for comparison (in atomic units)
-                theoretical_e = -zeta**2 / (2 * n**2)
-                error = abs(e - theoretical_e)
-
-                print(f"n={n}, l={l}: Computed E = {e:.6f}, "
-                      f"Theoretical E = {theoretical_e:.6f}, "
-                      f"Error = {error:.2e}")
+    print("\n------ Performance Summary ------")
+    print(f"Mesh size: {mesh}, r_max: {np.exp(xmax):.1f} a.u.")
 
 
 if __name__ == "__main__":
-    main1()
+    test_hydrogen_levels()
