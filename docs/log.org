@@ -99,11 +99,11 @@ psi = np.zeros(mesh, dtype=float)
 #+begin_src python
 
 if nodes is even:
-    y(0) = 1
-    y(1) = 0.5 * (12 - f(0) * 10) * y(0) / f(1)
+    psi(0) = 1
+    psi(1) = 0.5 * (12 - f(0) * 10) * psi(0) / f(1)
 else:
-    y(0) = 0
-    y(1) = dx
+    psi(0) = 0
+    psi(1) = dx
 
 #+end_src
 
@@ -116,11 +116,11 @@ else:
 
 ncross = 0
 for i in range(icl-1):
-    y(i+1) = ((12 - f(i) * 10) * y(i) - f(i-1) * y(i-1)) / f(i+1)
-    if y(i) * y(i+1) < 0:
+    psi(i+1) = ((12 - f(i) * 10) * psi(i) - f(i-1) * psi(i-1)) / f(i+1)
+    if y(i) * psi(i+1) < 0:
         ncross += 1
 
-yicl = y(icl)
+psi_icl = psi(icl)
 
 if nodes is even:
     ncross = 2*ncross
@@ -145,13 +145,168 @@ if ncross != nodes:
 
 #+end_src
 
-** Outward integration
+** Inward integration
 
 + First set the last two points
++ Boundary conditions require \( \psi_{mesh} = 0 \), but this would vanish the whole array, so we use an arbitrary small number to seed the inward integration
++ For the \( \psi_{mesh-1} \) expression, we do use \( \psi_{mesh+1} = 0 \)
 
 #+begin_src python
 
-y(mesh) = dx
-y(mesh-1) = ((12 - 10 * f(mesh)) * y(mesh)) / f(mesh-1)
+psi(mesh) = dx
+psi(mesh-1) = ((12 - 10 * f(mesh)) * psi(mesh)) / f(mesh-1)
+
+#+end_src
+
++ Inward integration is done in \( [mesh-1,icl] \) backwards
+
+#+begin_src python
+
+for i in range(mesh-1,icl, -1):
+    psi(i-1) = ((12 - 10 * f(i)) * psi(i) - f(i+1) * psi(i+1)) / f(i-1)
+
+#+end_src
+
+
+** Rescale and normilize
+
++ Once the wavefunction has been propagated outwards and inwards, for it to be a permisible solution, the wavefunction has to be continuous and in general, they are not at icl, we rescale \( \psi \) assuming that the inward integration is the true solution
+
+
+#+begin_src python
+
+scaling_factor = psi_icl / psi[icl]  # Match inward to outward at icl
+
+# Rescale only the inward part (icl to mesh)
+for i in range(icl, mesh+1):
+    psi[i] *= scaling_factor
+
+#+end_src
+
++ Next we normalize the array
+
+  #+begin_src python
+
+norm = np.sqrt(np.trapezoid(psi**2, x))
+psi /= norm
+
+  #+end_src
+
+
+** Derivative discontinuity
+
+#+begin_src python
+
+i = icl
+djump = (y[i+1] + y[i-1] - (14 - 12*f[i]) * y[i]) / dx
+
+if djump * psi[i] > 0:
+    eup = e  # Energy too high
+else:
+    elw = e  # Energy too low
+e = 0.5 * (eup + elw)  # Bisection update
+
+#+end_src
+
+
+#+begin_src python
+
+def HO():
+
+    # Init parameters
+
+    nodes = 1
+
+    xmax = 10
+    mesh = 500
+    x, dx = np.linspace(0, xmax, mesh, retstep=True, dtype=float)
+
+    # Harmonic oscillator potential
+    vpot = x ** 2
+
+    # Setup first trial energy bounds
+    e_lower = np.min(vpot)
+    e_upper = np.max(vpot)
+
+    e = 0.5 * (e_lower + e_upper)
+
+    # Setup simple f funcion to find icl
+    icl = -1
+    f = (vpot - 2*e) * (dx ** 2 / 12)
+
+    for i in range(mesh):
+        if f[i] == 0:
+            f[i] = 1e-20
+
+        if f(i) * f(i-1) < 0:
+            icl = i
+
+    # f as required by numerov
+    f = 1 - f
+
+    # init wavefunction
+    psi = np.zeros(mesh, dtype=float)
+
+    if nodes % 2:
+        # odd
+        psi[0] = 0
+        psi[1] = dx
+    else:
+        # even
+        psi[0] = 1
+        psi[1] = 0.5 * (12 - f[0] * 10) * psi[0] / f[1]
+
+    # Outward integration up to icl and count number of crossings
+
+    ncross = 0
+    for i in range(icl-1):
+        psi[i+1] = ((12 - f[i] * 10) * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
+        if y[i] * psi[i+1] < 0:
+            ncross += 1
+
+    psi_icl = psi[icl]
+
+    # Since the wavefunction is symetric about x0, account for the crossings on -x
+
+    if nodes % 2 :
+        ncross = 2*ncross
+    else:
+        ncross = 2*ncross + 1
+
+    # If we haven't found the right amount of crossings, update the energy
+    if ncross != nodes:
+        if ncross > nodes:
+            e_upper = e
+        else:
+            e_lower = e
+        e = 0.5 * (e_upper + e_lower)
+
+    # Inward integration
+
+    psi[mesh] = dx
+    psi[mesh -1] = ((12 - 10 * f[mesh])) * psi[mesh] / f[mesh-1]
+
+    for i in range(mesh-1, icl, -1):
+        psi[i-1] = ((12 - 10 * f[i])) * psi[i] - f[i+1] * psi[i+1] / f[i-1]
+
+    # Rescale wavefunction to match the inward to the outward integration at icl
+    scaling_factor = psi_icl / psi[icl]
+
+    for i in range(icl, mesh+1):
+        psi[i] *= scaling_factor
+
+    norm = np.sqrt(np.trapezoid(psi**2, x))
+
+    psi /= norm
+
+    i = icl
+    djump = (y[i+1] + y[i-1] - (14 - 12 * f[i]) * y[i]) / dx
+
+    if djump * psi[i] > 0:
+        e_upper = e
+    else:
+        e_lower = e
+
+    e = 0.5 * (e_upper + e_lower)
 
 #+end_src

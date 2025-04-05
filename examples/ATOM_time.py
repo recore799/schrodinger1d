@@ -7,42 +7,33 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from numerov import (
-    hydrogen_atom  # Current implementation
+    hydrogen_atom,  # Current implementation
 )
 
 
-print("\n Hydrogen Atom:")
-start_time = timeit.default_timer()
-n = 3
-l = 0
-Z = 1
+def test_hydrogen_levels():
+    print("\nHydrogen Atom Energy Levels (n=1 to 10, l=0):")
+    print("--------------------------------------------")
+    print(" n | Computed E (a.u.) | Expected E (a.u.) | Error")
+    print("---|-------------------|-------------------|-------")
 
-# Parameters
-xmin = -8.0          # r_min = e^{-8} ≈ 3.3e-5 a.u.
-xmax = np.log(100.0)  # r_max = 100 a.u.
-mesh = 1260
+    Z = 1
+    l = 0
+    xmin = -8.0
+    xmax = np.log(100.0)
+    mesh = 1260
 
+    for n in range(1, 7):
+        start_time = timeit.default_timer()
+        e_computed = hydrogen_atom(n, l, Z, xmin, xmax, mesh)
+        e_expected = -Z**2 / (2*n**2)
+        error = abs(e_computed - e_expected)
+        elapsed = timeit.default_timer() - start_time
 
-e = hydrogen_atom(n, l, Z, xmin, xmax, mesh)
-print(f"State n={n}, l={l} : e: {e:.8f}")
-current_time1 = timeit.default_timer() - start_time
+        print(f"{n:2} | {e_computed:.8f}        | {e_expected:.8f}        | {error:.2e} | {elapsed:.4f} sec")
 
-# ---- Summary ----
-print("\n------ Performance Summary ------")
-print(f"Current: {current_time1:.4f} sec")
+    print("\n------ Performance Summary ------")
+    print(f"Mesh size: {mesh}, r_max: {np.exp(xmax):.1f} a.u.")
 
-
-# print(f"10 States: {current_time:.4f} sec")
-
-# n_states = 10
-# energies = np.zeros(n_states)
-
-# # ---- (2) Current Fast Implementation ----
-# print("\nOnly one state:")
-# start_time = timeit.default_timer()
-# for i in range(n_states):
-#     energies[i] = hydrogen_atom(n=i)
-#     print(f"State {i}: {energies[i]:.8f}")
-# current_time = timeit.default_timer() - start_time
-
-
+# Run the test
+test_hydrogen_levels()
