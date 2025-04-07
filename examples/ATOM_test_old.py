@@ -28,7 +28,7 @@ def test_hydrogen_levels():
     r2 = r**2
     sqr = np.sqrt(r)
 
-    vpot = - Z/r
+    vpot = - 2*Z/r
 
     y = np.zeros(mesh+1)
 

@@ -13,7 +13,7 @@ from numerov import (
 
 def test_hydrogen_levels():
     Z = 1
-    l = 0
+    l = 1
     xmin = -8.0
     xmax = np.log(500.0)
     # mesh = 1260
@@ -41,10 +41,10 @@ def test_hydrogen_levels():
     print("-" * 80)
 
     for n in range(states):
-        n_quantum = n + 1  # Principal quantum number
+        n_quantum = n + 2  # Principal quantum number
         start_time = timeit.default_timer()
         # e_numerov, iterations = solve_sheq(n_quantum, l, Z, mesh, dx, r, sqr, r2, vpot, y)
-        e_numerov, iterations = hydrogen_atom(n=n_quantum, mesh=mesh, xmax=xmax, max_iter=100)
+        e_numerov, iterations = hydrogen_atom(n=n_quantum,l=l, mesh=mesh, xmax=xmax, max_iter=100)
         elapsed = timeit.default_timer() - start_time
         e_anal = -Z**2 / (2 * n_quantum**2)
         error = abs(e_numerov - e_anal)
