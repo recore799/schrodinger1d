@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
 ################################################################################
@@ -18,7 +19,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-20):
         e = 0.5 * (e_lower + e_upper)
 
         # Find icl
-        f, icl = f_and_icl_ho(vpot, e, dx)
+        f, f_10, icl = f_and_icl_ho(vpot, e, dx)
 
         # Initialize wavefunction
         psi = np.zeros(mesh)
@@ -33,7 +34,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-20):
             psi[1] = 0.5 * (12.0 - 10.0 * f[0]) * psi[0] / f[1]
 
         # Outward integration
-        psi_icl, ncross, f_10 = outward_integration(psi, f, icl)
+        psi_icl, ncross, f_10 = outward_integration(psi, f, f_10, icl)
 
         # Account for symmetry in node count
         if nodes % 2 == 0:
@@ -55,7 +56,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-20):
         # Inward integration (from x=xmax to icl)
         inward_integration(psi, f, icl, mesh, f_10)
 
-        scale_normalize(psi, psi_icl, icl, x)
+        scale_normalize_ho(psi, psi_icl, icl, x)
 
         # Compute derivative discontinuity
         djump = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
@@ -90,56 +91,87 @@ def f_and_icl_ho(vpot, e, dx):
 
     # f as required by numerov
     f = 1 - f
-    return f, icl
+    return f, 12.0 - 10 * f, icl
+
+def scale_normalize_ho(psi, psi_icl, icl, r):
+    # Match wavefunction at icl and normalize
+    scaling_factor = psi_icl / psi[icl]
+    psi[icl:] *= scaling_factor
+
+    # print(f"psi_icl is {psi_icl:.6f}")
+    # print(f"Rescaling factor: {scaling_factor:.6f}")
+    # print(f"Wavefunction after rescaling: psi[icl]={psi[icl]:.6f}, psi[mesh]={psi[-1]:.6f}")
+
+    norm = np.sqrt(np.trapezoid(psi**2, r))  # Symmetric normalization
+    psi /= norm
+
+    # print(f"Normalization factor: {norm:.6f}")
+    # print(f"Wavefunction after normalization (inside func): psi[icl]={psi[icl]:.6f}")
+
+
 
 #################################################################################
 
 
-def hydrogen_atom(n=0, l=0, Z=1, xmin=-8.0, xmax=np.log(100.0), mesh=1260, max_iter=1000, tol=1e-10):
+############################ Hydrogen Atom #####################################
+
+def hydrogen_atom(n=0, l=0, Z=1, xmin=-8.0, xmax=np.log(100.0), mesh=1260, max_iter=200, tol=1e-10):
     # Logarithmic mesh in x
-    x, dx = np.linspace(xmin, xmax, mesh, retstep=True)
+    x, dx = np.linspace(xmin, xmax, mesh+1, retstep=True)
 
     # Physical mesh in r
     r = np.exp(x) / Z
 
-    # Step sizes in r (for integrations or derivatives)
-    # dr = r * dx
+    # Precompute common terms
+    r2 = r**2
+    ddx12 = (dx**2) / 12.0
+    lnhfsq = (l+0.5)**2
 
     v0 = - Z / r
-    veff = v0 + ((l + 0.5)/r)**2
-
+    veff = v0 + lnhfsq / r2
     e_lower = np.min(veff)
     e_upper = v0[-1]
 
     e = 0.5 * (e_lower + e_upper)
+    de = 1e10
+    converged = False
 
-    # print(f"Initial energy bounds: e_lower={e_lower:.6f}, e_upper={e_upper:.6f}")
-
-    iter = 0
+    iterations = 1
     # Bisection loop
-    for iter in range(max_iter):
-        e = 0.5 * (e_lower + e_upper)
+    for iteration in range(max_iter):
+
+        iterations += 1
+
+        if abs(de) <= tol:
+            converged = True
+            break
 
         # Find icl
-        f, icl = compute_f_and_icl_atom(mesh, dx, r, v0, l, e)
+        f, f_10, icl = compute_f_and_icl_atom(mesh, ddx12, r2, lnhfsq, v0, e)
+
+
+        if icl < 0 or icl >= mesh - 2:
+            sys.stderr.write(f"ERROR: hydrogen_atom: icl={icl} out of range (mesh={mesh})\n")
+            sys.exit(1)
 
         # Initialize wavefunction
-        psi = np.zeros(mesh)
+        psi = np.zeros(mesh+1)
 
         # Initialize wavefunction
         psi[0] = (r[0] ** (l + 1)) * (1 - (2 * Z * r[0]) / (2*l + 2)) / np.sqrt(r[0])
         psi[1] = (r[1] ** (l + 1)) * (1 - (2 * Z * r[1]) / (2*l + 2)) / np.sqrt(r[1])
 
         # Outward integration
-        psi_icl, ncross, f_10 = outward_integration(psi, f, icl)
+        nodes = n-l-1
+        psi_icl, ncross, f_10 = outward_integration(psi, f, f_10, icl)
 
         # Adjust energy bounds based on node count
-        nodes = n-l-1
         if ncross != nodes:
             if ncross > nodes:
                 e_upper = e
             else:
                 e_lower = e
+            e = (e_upper + e_lower) * 0.5
             continue  # Skip inward integration if node count is wrong
 
         psi[-1] = dx
@@ -148,33 +180,38 @@ def hydrogen_atom(n=0, l=0, Z=1, xmin=-8.0, xmax=np.log(100.0), mesh=1260, max_i
         # Inward integration (from x=xmax to icl)
         inward_integration(psi, f, icl, mesh, f_10)
 
-        scale_normalize(psi, psi_icl, icl, r)
+        scale_normalize_atom1(psi, psi_icl, icl, x, r2)
 
-        # Compute derivative discontinuity
-        djump = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
-
-        # Check convergence
-        if (e_upper - e_lower) < tol:
-            # print(f"Reached convergence after {iter} iterations")
-            break
-
-        # Adjust energy based on djump sign
-        if djump * psi[icl] > 0.0:
-            e_upper = e
-        else:
-            e_lower = e
-
-    return e
+        # Update energy
+        e, e_lower, e_upper, de = update_energy(icl, f, psi, dx, ddx12, e, e_lower, e_upper)
 
 
-def compute_f_and_icl_atom(mesh, dx, r, vpot, l, e):
-    # Precompute common terms
-    r2 = r ** 2
-    sqlhf = (l + 0.5) ** 2  # (l + 0.5)^2
-    ddx12 = dx ** 2 / 12.0   # Δx² / 12
+    if not converged:
+        error_msg = (f"ERROR: hydrogen_atom not converged after {iterations} iterations.\n"
+                     f"Final de={de:.2e}, e={e:.6f}, nodes expected (n={n}, l={l})={nodes}, found={ncross}")
+        sys.stderr.write(error_msg + "\n")
+        sys.exit(1)
 
-    # Compute f in one shot (vectorized)
-    f = ddx12 * (sqlhf + 2 * r2 * (vpot - e))
+    return e, iterations
+
+def update_energy(icl, f, psi, dx, ddx12, e, e_lower, e_upper):
+    i = icl
+    psi_cusp = (psi[i-1] * f[i-1] + psi[i+1] * f[i+1] + 10 * f[i] * psi[i]) / 12.0
+    dfcusp = f[i] * (psi[i] / psi_cusp - 1.0)
+    de = 0.5 * dfcusp / ddx12 * (psi_cusp ** 2) * dx
+
+    if de > 0:
+        e_lower = e
+    elif de < 0:
+        e_upper = e
+    e += de
+    e = max(min(e, e_upper), e_lower)
+    return e, e_lower, e_upper, de
+
+
+
+def compute_f_and_icl_atom(mesh, ddx12, r2, lnhfsq, vpot, e):
+    f = ddx12 * (lnhfsq + 2 * r2 * (vpot - e))
 
     # Handle zeros to avoid sign issues
     f = np.where(f == 0.0, 1e-20, f)
@@ -184,34 +221,36 @@ def compute_f_and_icl_atom(mesh, dx, r, vpot, l, e):
     icl = sign_changes[-1] + 1 if len(sign_changes) > 0 else mesh - 1
 
     # f as required by Numerov
-    # f = 1.0 - f
+    f = 1.0 - f
 
-    return 1.0 - f, icl
-
-
+    return f, 12.0 - 10.0 * f, icl
 
 ################################################################################
 ################################ INTEGRATION ###################################
-def outward_integration(psi, f, icl):
+
+def outward_integration(psi, f, f_10, icl):
     ncross = 0
-    f_10 = 12.0 - 10.0 * f  # Precompute
     for i in range(1, icl):
         psi[i+1] = (f_10[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
         ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
     return psi[icl], ncross, f_10
 
 def inward_integration(psi, f, icl, mesh, f_10):
-    # f_10 = 12.0 - 10.0 * f # Precompute
-    # Inward integration in [xmax, icl]
-    for i in range(mesh-2, icl, -1):
+    for i in range(mesh-1, icl, -1):
         psi[i-1] = (f_10[i] * psi[i] - f[i+1] * psi[i+1]) / f[i-1]
+        if abs(psi[i-1]) > 1e10:
+            psi[i-1:-2] /= psi[i-1]
 
-def scale_normalize(psi, psi_icl, icl, r):
+
+def scale_normalize_atom1(psi, psi_icl, icl, x, r2):
     # Match wavefunction at icl and normalize
     scaling_factor = psi_icl / psi[icl]
     psi[icl:] *= scaling_factor
-    norm = np.sqrt(np.trapezoid(psi**2, r))  # Symmetric normalization
+
+    norm = np.sqrt(np.trapezoid(psi**2 * r2, x))
     psi /= norm
+
+
 
 
 ###############################################################################
@@ -219,10 +258,10 @@ def scale_normalize(psi, psi_icl, icl, r):
 import timeit
 
 def test_hydrogen_levels():
-    print("\nHydrogen Atom Energy Levels (n=1 to 10, l=0):")
-    print("--------------------------------------------")
-    print(" n | Computed E (a.u.) | Expected E (a.u.) | Error")
-    print("---|-------------------|-------------------|-------")
+    print("\nHydrogen Atom Energy Levels (n=1 to 6, l=0):")
+    print("-----------------------------------------------------------------------------------")
+    print(" n | Computed E (a.u.)  | Expected E (a.u.)  | Error    | Time       | Iterations  ")
+    print("---|--------------------|--------------------|----------|------------|-------------")
 
     Z = 1
     l = 0
@@ -232,15 +271,12 @@ def test_hydrogen_levels():
 
     for n in range(1, 7):
         start_time = timeit.default_timer()
-        e_computed = hydrogen_atom(n, l, Z, xmin, xmax, mesh)
+        e_computed, iteration = hydrogen_atom(n, l, Z, xmin, xmax, mesh)
         e_expected = -Z**2 / (2*n**2)
         error = abs(e_computed - e_expected)
         elapsed = timeit.default_timer() - start_time
 
-        print(f"{n:2} | {e_computed:.8f}        | {e_expected:.8f}        | {error:.2e} | {elapsed:.4f} sec")
-
-    print("\n------ Performance Summary ------")
-    print(f"Mesh size: {mesh}, r_max: {np.exp(xmax):.1f} a.u.")
+        print(f"{n:2} | {e_computed:.8f}        | {e_expected:.8f}        | {error:.2e} | {elapsed:.4f} sec | {iteration}")
 
 
 if __name__ == "__main__":

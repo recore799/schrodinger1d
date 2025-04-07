@@ -429,3 +429,20 @@ if __name__ == "__main__":
 
 
 #+end_src
+
+
+
+* TODO NOTES
+
++ Make grid outside main function
+  - Created setup function for parameters
+
++ Check normalization over x with ((psi*r)**2 dx)
+  - I had the wrong parameters
+
++ Check why old doesnt need to update bounds before inward integration (or if it does)
+  - Still need to check this
+
++ WHYYYYYYYYYYYYYYYYYYY
+
++ NOW IT TAKES ~35 iterations to converge even for l=0 (but still works)
