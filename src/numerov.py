@@ -93,7 +93,7 @@ def solve_atom(n=1, l=0, Z=1, rmax=500.0, mesh=1421, max_iter=100, tol=1e-10):
                      f"Final de={de:.2e}, e={e:.6f}, nodes expected (n={n}, l={l})={nodes_expected}, got {ncross}")
         raise RuntimeError(error_msg)
 
-    return e, iterations
+    return e, iterations, psi
 
 ################################################################################
 ################################ Helpers1 #######################################
@@ -329,7 +329,10 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
     e_lower = np.min(vpot)
     e_upper = np.max(vpot)
 
+    iterations = 1
     for iter in range(max_iter):
+        iterations += 1
+
         e = 0.5 * (e_lower + e_upper)
         # Compute the Numerov coefficients and get the index of potential discontinuity.
         f, f_10, icl = f_and_icl_ho(vpot, e, dx)
@@ -374,7 +377,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
         else:
             e_lower = e
 
-    return e
+    return e, iterations
 
 ################################################################################
 ################################ Helpers2 #######################################

@@ -27,7 +27,7 @@ for n in range(0,states):
 
     # Get the actual result
     # e, iterations = solve_atom_bisection(n=state, l=l)
-    e, iterations = solve_atom(n=state, l=l)
+    e, iterations, psi = solve_atom(n=state, l=l)
 
     error = abs(e - theoretical_energy)
 

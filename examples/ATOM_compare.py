@@ -22,7 +22,7 @@ for n in range(states):
     # Test solve_atom (Perturbation updates)
     timer_pert = timeit.Timer(lambda: solve_atom(n=state, l=l))
     time_pert = timer_pert.timeit(number=3) / 3 * 1000  # avg in ms
-    e_pert, iter_pert = solve_atom(n=state, l=l)
+    e_pert, iter_pert, psi = solve_atom(n=state, l=l)
     error_pert = abs(e_pert - theoretical_energy)
 
     # Test solve_atom_bisection
