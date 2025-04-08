@@ -5,7 +5,7 @@ import os
 # Add src directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from numerov import solve_atom
+from numerov import solve_atom, solve_atom_bisection
 
 states = 6
 l = 0
@@ -20,11 +20,13 @@ for n in range(0,states):
     theoretical_energy = -1 / state**2
 
     # Time the function execution
+    # timer = timeit.Timer(lambda: solve_atom_bisection(n=state, l=l))
     timer = timeit.Timer(lambda: solve_atom(n=state, l=l))
     runs = 3  # Number of runs to average
     time_taken = timer.timeit(number=runs) / runs * 1000  # Convert to milliseconds
 
     # Get the actual result
+    # e, iterations = solve_atom_bisection(n=state, l=l)
     e, iterations = solve_atom(n=state, l=l)
 
     error = abs(e - theoretical_energy)

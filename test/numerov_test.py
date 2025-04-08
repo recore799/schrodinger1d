@@ -5,9 +5,9 @@ import sys
 
 ################################################################################
 ###################### Current Numerov Harmonic Oscillator #####################
-def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-20):
+def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
     # Initialize grid and potential
-    x, dx = np.linspace(0, xmax, mesh, retstep=True)
+    x, dx = np.linspace(0, xmax, mesh+1, retstep=True)
     vpot = 0.5 * x**2  # Harmonic oscillator potential
 
     # Initial energy bounds
@@ -21,8 +21,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-20):
         # Find icl
         f, f_10, icl = f_and_icl_ho(vpot, e, dx)
 
-        # Initialize wavefunction
-        psi = np.zeros(mesh)
+        psi = np.zeros(mesh+1)
         # Initialize wavefunction based on parity
         if nodes % 2:
             # Odd
@@ -93,16 +92,16 @@ def f_and_icl_ho(vpot, e, dx):
     f = 1 - f
     return f, 12.0 - 10 * f, icl
 
-def scale_normalize_ho(psi, psi_icl, icl, r):
+def scale_normalize_ho(psi, psi_icl, icl, x):
     # Match wavefunction at icl and normalize
     scaling_factor = psi_icl / psi[icl]
-    psi[icl:] *= scaling_factor
+    psi[icl:-2] *= scaling_factor
 
     # print(f"psi_icl is {psi_icl:.6f}")
     # print(f"Rescaling factor: {scaling_factor:.6f}")
     # print(f"Wavefunction after rescaling: psi[icl]={psi[icl]:.6f}, psi[mesh]={psi[-1]:.6f}")
 
-    norm = np.sqrt(np.trapezoid(psi**2, r))  # Symmetric normalization
+    norm = np.sqrt(np.trapezoid(psi**2, x))  # Symmetric normalization
     psi /= norm
 
     # print(f"Normalization factor: {norm:.6f}")
