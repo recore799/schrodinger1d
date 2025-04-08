@@ -446,3 +446,9 @@ if __name__ == "__main__":
 + WHYYYYYYYYYYYYYYYYYYY
 
 + NOW IT TAKES ~35 iterations to converge even for l=0 (but still works)
+
++ FIXED, I FORGOT TO ADJUST ENERGY CORRECTION TO RYDBERGS!!
+
++ NEED TO CHECK C translation takes 3 less iterations for lower states and 1 less iteration for higher states, I suppose that its because manual normalization is more precise NEED TO CHECK
+
++ ACTUALLY I think its rmax that makes a difference in convergence

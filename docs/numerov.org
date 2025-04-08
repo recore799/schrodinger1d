@@ -29,6 +29,7 @@ Así, las expansiones se reescriben como:
 \[ y_{n-1} = y_n - y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 - \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 - \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{\Delta x^6} \]
 
 Al sumar ambos desarrollos se obtiene
+
 \[ y_{n+1} + y_{n-1} = 2y_n + y_n''(\Delta x)^2 + \frac{1}{12} y_n^{(4)} (\Delta x)^4 + \mathcal{O} [(\Delta x)^6] \]
 
 Luego, se puede escribir
@@ -39,7 +40,7 @@ y aplicamos la expresion obtenida
 
 \[ z_{n+1} + z_{n-1} = 2z_n + z_n'' (\Delta x)^2 + \mathcal{O}[(\Delta x)^4] \]
 
-Esta es una expresion para la segunda derivada desarrollando en Taylor hasta tercer orden, de modo que, ademas, se obtiene una expresion para la cuarta derivada de \( y^{(4)} \)
+Esta es una expresion para la segunda derivada desarrollando en Taylor hasta tercer orden, de modo que, ademas, se obtiene una expresion para la cuarta derivada \( y^{(4)} \)
 
 \[ z''_n = \frac{z_{n+1}+z_{n-1}-2z_n}{(\Delta x)^2} + \mathcal{O}[(\Delta x)^2] = y_n^{(4)}. \]
 
@@ -74,7 +75,10 @@ Esta expresion nos permite propagar la solucion \( y_n \) conociendo los primero
 
   se reescribe la formula de Numerov
 
-  \[ y_{n+1} = \frac{(12-10f_n)y_n-f_{n-1}y_{n-1}}{f_{n+1}} \]
+  \begin{equation}
+  \label{eq:numerov}
+      \boxed{y_{n+1} = \frac{(12-10f_n)y_n-f_{n-1}y_{n-1}}{f_{n+1}}}
+  \end{equation}
 
 
 
@@ -91,7 +95,7 @@ Un sistema de oscilador armonico es cuando el potencial tiene la forma
 El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimensionales:
 
 + Variable adimensional \( \xi \)
-+ Longitud \( \lambda \) de modo que \( x = \lambda \xi \)
++ Esta variable se relaciona con \( x \) por medio de la longitud \( \lambda \) de modo que \( x = \lambda \xi \)
 
 \[ \pdv[2]{\psi}{(\lambda \xi)} = \qty( - \frac{2m E }{\hbar^2} + \frac{mK \lambda^2}{\hbar^2} \xi^2  )\psi \]
 
@@ -119,8 +123,12 @@ El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimens
 
   \[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m (\epsilon \hbar \omega/2) (\hbar^2/m^2\omega^2)^{1/2}}{\hbar^2} +  \xi^2  )\psi \]
 
++ Finalmente la ecuacion de Schrödinger adimensional que se resuelve con el metodo de Numerov es:
 
-  \[ \pdv[2]{\psi}{\xi} = (\epsilon - \xi^2)\psi \]
+  \begin{equation}
+  \label{eq:ho}
+  \boxed{\pdv[2]{\psi}{\xi} = (\epsilon - \xi^2)\psi}
+  \end{equation}
 
 
 * Implementacion
