@@ -2,6 +2,11 @@
 
 A Python implementation of the Numerov algorithm for solving radial Schrödinger equations for quantum systems.
 
+
+## DOCUMENTATION
+
+[Metodo de Numerov](docs/numerov.pdf)
+
 ## Project Structure
 
 ```
@@ -79,4 +84,3 @@ Testing harmonic_oscillator for 6 states
 ## License
 
 [GPL License](LICENSE)
-```
