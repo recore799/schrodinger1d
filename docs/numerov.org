@@ -7,7 +7,10 @@
 
 Método numérico desarrollado por el astrónomo ruso Boris Vasilyevich Numerov en la década de 1910. Se basa en desarrollar la expansión de Taylor de una función \( y : I \subset \mathbb{R} \to \mathbb{R} \) alrededor de un punto \( x_0 \in I \), donde \( y \) es solución a la ecuación diferencial de segundo orden
 
-\[ y''(x) = - g(x)y(x) + s(x), \]
+\begin{equation}
+\label{eq:numerov-eq}
+    y''(x) = - g(x)y(x) + s(x),
+\end{equation}
 
 con \( g: I \to \mathbb{R} \) y \( s: I \to \mathbb{R} \) como funciones conocidas, definidas en el mismo intervalo \( I \) que \( y \). Para que la expansión de Taylor sea válida hasta el orden requerido, se exige que \( y \) sea al menos \( C^4 \) i.e. cuatro veces diferenciable. Además, \( g \) y \( s \) deben ser funciones suficientemente suaves e.g. continuas, para garantizar la existencia de una solución.
 
@@ -82,15 +85,23 @@ Esta expresion nos permite propagar la solucion \( y_n \) conociendo los primero
 
 
 
-* Ecuación de Schrödinger unidimensional, independiente del tiempo
 
- \[ \frac{\partial^{2}\psi}{\partial x^2} = - \frac{2m}{\hbar^2}(E - V(x))\psi \]
+Este metodo se aplica a los sistemas fisicos que se pueden modelar con una ecuacion diferencial del tipo \ref{eq:numerov-eq}. En particular vamos a resolver la ecuacion de Schrodinger unidimensional independiente del tiempo para el sistema de oscilador armonico y el atomo de hidrogeno, notamos que hay mas ecuaciones interesantes que se pueden resolver como la ecuacion de Poisson.
 
-** Oscilador Harmonico
 
-Un sistema de oscilador armonico es cuando el potencial tiene la forma
+* Oscilador Harmonico
+
+Al aplicar el metodo de separacion de variables la ecuacion de Schrodinger se obtiene la ecuacion de Schrodinger unidimensional para una funcion \( \psi = \psi(x) \)
+
+\begin{equation}
+\label{eq:schr1}
+\frac{\partial^{2}\psi}{\partial x^2} = - \frac{2m}{\hbar^2}(E - V(x))\psi
+\end{equation}
+
+Un sistema de oscilador armonico es cuando el potencial en la ecuacion (\ref{eq:schr1}) es
 
 \[ V(x) = - \frac{1}{2}K x^2. \]
+donde \( K \) es una constante.
 
 El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimensionales:
 
@@ -123,25 +134,598 @@ El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimens
 
   \[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m (\epsilon \hbar \omega/2) (\hbar^2/m^2\omega^2)^{1/2}}{\hbar^2} +  \xi^2  )\psi \]
 
-+ Finalmente la ecuacion de Schrödinger adimensional que se resuelve con el metodo de Numerov es:
++ Finalmente la ecuacion de Schrödinger adimensional es:
 
   \begin{equation}
   \label{eq:ho}
-  \boxed{\pdv[2]{\psi}{\xi} = (\epsilon - \xi^2)\psi}
+  \boxed{\pdv[2]{\psi}{\xi} = -2\qty(\epsilon - \frac{\xi^2}{2})\psi}
   \end{equation}
 
+con \( V(\xi) = \frac{1}{2}\xi^2 \).
 
-* Implementacion
+** Solucion Exacta
+
+*** Analisis asintotico
+
+Para grande \( \xi \), las soluciones de (\ref{eq:ho}), donde \( \epsilon \) se puede despreciar, son de la forma
+
+\[ \psi(\xi) \sim \xi^n e^{\pm \xi^2/2}, \]
+
+donde \( n \) cualquier valor finito. El exponente con signo positivo da lugar a funciones de onda no normalizables por lo que corresponde a soluciones no fisicas. Entonces asumimos que su comportamiento asintotico hace que la funcion de onda sea
+
+\begin{equation}
+\label{eq:ho_sol1}
+\psi(\xi) = H(\xi)e^{-\xi^2/2}
+\end{equation}
+
+donde \( H(\xi) \) es alguna funcion bien comportada para \( \xi \) grande (de modo que el comportamiento asintotico este determinado por el factor \( e^{-\xi^2/2} \)). En particular \( H(\xi) \) no debe crecer como \( e^{\xi^2} \) para asi obtener soluciones fisicas. Bajo asumir que la funcion de onda es (\ref{eq:ho_sol1}), la ecuacion (\ref{eq:ho}) se convierte en una ecuacion para \( H(\xi) \):
+
+\begin{gather*}
+    \dv[2]{\xi}(H(\xi)e^{-\xi^2}/2) = -2\qty(\epsilon- \frac{\xi^2}{2})H(\xi)e^{-\xi^2/2} \\
+    \dv[2]{H(\xi)}{\xi} e^{-\xi^2/2}  -\xi\dv{H(\xi)}{\xi}e^{-\xi^2/2} - \xi\dv{H(\xi)}{\xi}e^{-\xi^2/2} + \xi^2 H(\xi)e^{-\xi^2/2}- H(\xi) e^{-\xi^2/2} = -2\qty(\epsilon- \frac{\xi^2}{2})H(\xi)e^{-\xi^2/2} \\
+    \dv[2]{H(\xi)}{\xi} - 2\xi \dv{H(\xi)}{\xi} + (2\epsilon - 1)H(\xi) = 0
+\end{gather*}
+
+Se expande la solucion \( H(\xi) \) en una serie de potencias
+
+\[ H(\xi) = \sum_{n=0}^{\infty} A_n\xi^n \]
+
+la primer derivada es simplemente
+
+\[ \dv{H}{\xi} = \sum_{n=0}^{\infty} nA_n\xi^{n-1} \]
+
+para la segunda derivada, diferenciamos cada termino
+
+\[ \dv[2]{H}{\xi} = \dv{\xi}(A_1 + 2A_2\xi + 3A_3 \xi^2 + ... ) = 2A_2 + 2*3 A_3\xi + 3*4 A_4\xi^2 + ... = \sum_{n=0}^{\infty} (n+1)(n+2)A_{n+2} \xi^n \]
+sustituyendo en la ecuacion para \( H(\xi) \) se tiene
+
+\begin{align*}
+    &\dv[2]{H(\xi)}{\xi} - 2\xi \dv{H(\xi)}{\xi} + (2\epsilon - 1)H(\xi) = 0 \\
+    &\sum_{n=0}^{\infty} \{(n+1)(n+2)A_{n+2} \xi^n  - 2\xi(nA_n\xi^{n-1}) + (2\epsilon - 1)A_n\xi^n \}= 0 \\
+    &\sum_{n=0}^{\infty}  \{(n+1)(n+1) A_{n+2} + (2\epsilon - 2n - 1)A_n \} \xi^n = 0
+\end{align*}
+
+esta expresion se debe satisfacer para todo \( \xi \) por el teorema de existencia y unicidad, entonces los coeficientes de todo orden deben ser cero:
+
+\[ (n+2)(n+1)A_{n+2} + (2\epsilon - 2n -1)A_n  =0 \]
+
+asi, dados \( A_0 \) y \( A_1 \), se puede determinar por recursion \( H(\xi) \) como una serie de potencias
+
+\begin{equation}
+\label{eq:rec-hermite}
+     A_{n+2} = \frac{(2\epsilon - 2n -1)A_n}{n^2 + 3n + 2}
+\end{equation}
+
+\begin{gather*}
+    \text{Para \(n\) muy grande, se tiene:} \\
+    A_{n+2}  \sim \frac{2A_n}{n}
+\end{gather*}
+
+Se resuelve esta recursion para el caso par e impar:
+
++ Para una potencia par \( n=2k \):
+
+  \[ A_{2k+2} \sim \frac{1}{k}A_{2k} \]
+
++ Iterando:
+
+  \[ A_{2k} \sim \frac{1}{k-1}A_{2k-2} \sim \frac{1}{k-1}\cdot \frac{1}{k-2}A_{2k-4}\sim \frac{A_0}{(k-1)!} \]
+
++ Usando \( (k-1)! = k!/k \), para \( k \) muy grande, la solucion a la recursion es
+
+  \[ A_{2k} \sim \frac{A_0}{k!} \]
+
++ Similarmente, para una potencia impar \( n = 2k+1 \):
+
+  \begin{gather*}
+  A_{2k+3} \sim \frac{2}{2k+1}A_{2k+1} \sim \frac{1}{k}A_{2k+1} \\
+  A_{2k+1} \sim \frac{A_1}{k!}
+  \end{gather*}
+
++ Por lo tanto, para \( n \) muy grande, la recursion se comporta como:
+
+\[ A_n \sim \frac{1}{(n/2)!} \]
+
+Esto implica:
+
+\[ H(\xi) \sim \sum_k \qty[\frac{A_0}{k!}\xi^{2k} + \frac{A_1}{k!}\xi^{2k+1}] = A_0e^{\xi^2} + A_1\xi e^{\xi^2} \]
+
+Esta expresion se interpreta como que la recurrencia (\ref{eq:rec-hermite}) produce una funcion \( H(\xi) \) que crece como \( e^{\xi^2} \) y da soluciones divergentes, i.e. no fisicas. Para prevenir este comportamiento, debemos truncar la serie despues de algun \( n \) y asi reducir la solucion a un polinomio de grado finito. Entonces, en la recursion (\ref{eq:rec-hermite}), para que la serie termine,
+
+\begin{gather*}
+      A_{n+2} = \frac{(2\epsilon - 2n -1)A_n}{(n+2)(n+1)} \\
+      2\epsilon - 2n -1 = 0 \\
+      \epsilon = n + \frac{1}{2}
+\end{gather*}
+
+donde \( n \) es un entero positivo. Esta condicion nos da la cuantizacion de la energia del oscilador harmonico:
+
+\begin{equation}
+\label{eq:ho-energy}
+    E_n = (n+\frac{1}{2})\hbar \omega \qc n \in \mathbb{Z}^+
+\end{equation}
+
+Los polinomios correspondientes \( H_n(\xi) \) son los polinomios de Hermite, donde \( H_n(\xi) \):
+
++ Es de grado \( n \) en \( \xi \)
+
++ Tiene \( n \) nodos
+
++ Es par para \( n \) par e impar para \( n \) impar
+
+Finalmente, la funcion de onda correspondiente a la energia \( E_n \) es
+
+\[ \psi_n(\xi) = H_n(\xi)e^{-\xi^2/2} \]
 
 
+* Notacion y convenciones numericas
+
+** Discretizacion y funciones continuas
+
+Para representar funciones continuas \( \psi(x) : x\in I \subset \mathbb{R} \to \mathbb{R} \) de forma numerica:
+
++ Se discretiza el dominio en una malla equiespaciada \( x_i = i*\Delta x \), donde
+
+  \[ i \in \{0,1,...,mesh\} \]
+
++ Los valores de \( \psi(x_i) \) se almacenan en un arreglo \( \psi_i \) indexado, donde
+
+  \[ \psi_i \equiv \psi(x_i) \to \psi[i] \text{ en Python} \]
+
+** Implementacion en Python
+
+Para una malla con \( mesh \) intervalos (\( mesh + 1 \) puntos), el ultimo elemento del arreglo es
 
 #+begin_src python
 
-e_lower = np.min(vpot)
-e_upper = np.max(vpot)
+mesh = 100
+x = np.linspace(mesh+1)
+psi = f(x) # Alguna funcion de x
+psi[0] # Primer elemento de psi
+psi[mesh] # Ultimo elemento de psi
 
 #+end_src
 
++ Como Python es cero indexado, hacer el tamano de la malla \( mesh + 1 \) asegura que \( x_{max} = mesh * \Delta x \) y que \( \psi_{xmax} = psi[mesh] \)
+
+** Notacion
+
+Usamos tres diferentes maneras de representar el mismo numero:
+
+\[ \underbrace{\psi_R(x)}_{\text{Funcion que depende de \( x \)}} \to \underbrace{\psi_i^R}_{\text{iesimo valor de \( \psi^R \)}} \to \underbrace{psi\_R[i]}_{\text{Elemento \( i \) del arreglo \( psi\_R \)}} \]
+
+* Algoritmo de biseccion para el oscilador harmonico
+
+** Descripcion general
+
++ *Inicializacion de la malla*
+
+  - Se discretiza el dominio espacial en \( mesh + 1 \) puntos uniformemente espaciados \( x \in [0,xmax] \), donde \( xmax \) es un numero suficientemente grande para que la solucion \( \psi \) cumpla con las condiciones de frontera.
+
+  - Se puede construir la funcion de onda para \( x \) negativo usando simetria, dado que \( \psi_n(-x) = (-1)^n\psi_n(x) \), lo cual es facilitado por la simetria del potencial de oscilador harmonico; de otro modo la integracion se tendria que dar sobre todo el intervalo \( [-xmax, xmax] \)
+
+  - El potencial de oscilador harmonico es
+
+    \[ V(x) = \frac{1}{2}x^2 \to V_i = 0.5*x^2_i \]
+  - [[Malla][Implementacion en Python]]
+
++ *Busqueda de eigenvalores por biseccion*
+
+  - Cotas iniciales: \( e\_lower = min(V(x)) \), \( e\_upper = max(V(x)) \).
+    Con el objetivo de encontrar \( E \) tal que la solucion dada por la formula de Numerov \( \psi(x) \) sea fisica, e.g. suave, normalizable y cumple condiciones de frontera.
+
++ *Calculo del punto de retorno clasico*
+
+  - Se determina el primer indice donde \( V(x) > E \) usando la funcion auxiliar
+
+    \[ f^{aux} = 2(V-E) \frac{\Delta x^2}{12} \]
+
+  - Detalles fisicos: [[Punto de retorno clasico][Punto de retorno clasico]]
+
++ *Integracion numerica de \( \psi(x) \)*
+
+  Se hacen dos integraciones
+
+  - Hacia afuera (\( 0 \to icl \)): Se inicia \( \psi_0 \) y \( \psi_1 \) segun paridad y se propaga hasta \( \psi_{icl} \) con Numerov, asi propagando la solucion izquierda \( \psi^L \)
+
+  - Hacia adentro (\( xmax \to icl \)): Se impone la condicion de frontera \( \psi(xmax) = 0 \), luego se puede calcular \( \psi_{mesh -1} \) con la formula de Numerov y considerando que \( \psi_{mesh+1} = 0 \); asi propagando la solucion derecha \( \psi^R \)
+
+  - En general estas dos funciones tienen valores diferentes en \( x_c = icl * \Delta x \)
+
+  - [[Integracion][Ver integracion]]
+
++ *Acoplamiento y normalizacion*
+
+  Queremos que la solucion dada por Numerov sea fisicamente valida, e.g. continua y normalizada:
+
+  + En \( x_c = icl * \Delta x \)
+    - Las soluciones \( \psi^L \) y \( \psi^R \) generalmente no coinciden en amplitud
+
+    - Se escala \( \psi^R \) (asumiento que \( \psi^L \) es la solucion correcta) para garantizar continuidad en este punto de la malla
+
+      \[ \psi^{R} \leftarrow \psi^{R} \cdot \frac{\psi^{L}_{icl}}{\psi^{R}_{icl}} \]
+
+  + Se calcula la norma, \( \mathcal{N} \), de \( \psi \) numericamente, i.e. regla del trapecio, tomando en cuenta la simetria
+
+    \[ \mathcal{N} = \int 2|\psi|^2 \dd{x} \]
+    y se normaliza
+
+    \[ \psi \to \frac{\psi}{\int 2|\psi|^2 \dd{x}} \]
+
+  + Detalles de la implementacion [[Acoplamiento y normalizacion]]
+
++ *Criterio de convergencia*
+
+  - Se calcula la discontinuidad de la derivada \( \Delta \psi' \) en \( icl \):
+
+  - Actualizacion de energia:
+    - Si \( \Delta \psi' * \psi_{icl} > 0 \implies E \) es demasiado alto, entonces se actualiza la cota superior \( e\_upper = E \)
+    - Si \( \Delta \psi' * \psi_{icl} < 0 \implies E \) demasiado bajo, entonces se actualiza la cota inferior \( e\_lower = E \)
+
+  - [[Criterio de convergencia][Detalles de convergencia]]
+
+** Malla
+
++ Utilizamos la libreria numpy para tener acceso a operaciones vectorizadas sobre los arreglos
+
+#+begin_src python
+
+import numpy as np
+
+x, dx = np.linspace(0, xmax, mesh+1, retstep=True)
+vpot = 0.5 * x**2  # Potencial de oscilador harmonico
+
+#+end_src
+
+** Punto de retorno clasico
+
+Es el punto, \( x_{rc} \), que marca el limite entre las regiones clasicamente permitida y prohibida:
+
++ En \( x < x_{rc} \) ( \( V(x) < E \) ), \( \psi(x) \) oscila; los nodos se encuentran en esta region
+
++ En \( x> x_{rc} \) (\( V(x) > E \)), \( \psi(x) \) decae exponencialmente
+
++ Analizamos el comportamiento de \( f^{aux} \)
+
+  \[ f^{\text{aux}} = \frac{2(V-E) * \Delta x^2}{12} \]
+
+  - \( f^{\text{aux}} < 0 \) en la region clasicamente permitida \( V(x)<E \)
+
+  - \( f^{\text{aux}} > 0 \) en la region prohibida \( V(x) > E \)
+
+  - El cruce \( f^{\text{aux}} = 0 \) coincide con \( V(x_{rc}) = E \) (punto de retorno clasico exacto), pero como \( f^{aux} \) vive en el espacio discretizado, no esta garantizado que \( f^{aux} = 0 \) se cumpla, en otras palabras, no se garantiza que exista el indice exacto \( irc \) de modo que un punto en la malla \( x_{rc} = irc*\Delta x \) haga que \( f_{irc}^{aux} = 0 \)
+
+*** ICL
+
++ El indice \( icl \) es una aproximacion discreta al punto de retorno clasico \( x_{rc} \)
+
+  - Corresponde al primer punto de la malla \( x_c = icl * \Delta x \) donde \( V > E \)
+
+  - El punto de retorno clasico exacto \( x_{rc} \) esta entre \( x_c - \Delta x \) y \( x_c \):
+
+    \[ x_{rc} \in [x_c-\Delta x, x_c] \]
+
+*** Implementacion
+
+#+begin_src python
+
+# Funcion auxiliar
+f_aux = 2*(V-E) * (dx**2/12)
+
+# Evadimos division entre cero
+f_aux = np.where(f == 0.0, 1e-20, f_aux)
+
+
+# Deteccion de cambios de signo en f_aux
+sign_changes = np.where(np.diff(np.sign(f_aux)))[0] # Devuelve los cambios de signo
+icl = sign_changes[-1] + 1 # Primer punto en la region prohibida
+
+#+end_src
+
+*** Notas
+
++ La funcion auxiliar \( f^{aux} \) nos proporciona una relacion simple para determinar \( icl \). *La formula de Numerov usa:*
+
+  \[ f = 1 - f^{aux} \]
+
++ Dado que \( f \) se utiliza como denominador en el metodo de Numerov, debemos garantizar que ningun elemento sea exactamente cero. Utilizamos la funcion \( np.where(condition, x, y) \):
+
+  - Es una funcion vectorizada que actua como un \( if-else \) sobre arreglos de NumPy
+
+  - Para cada elemento en \( f^{aux} \)
+
+    \[\begin{cases}\text{Si } f^{aux}_i = 0.0, & f^{aux}_i \to 1e-20 \\ \text{Si } f^{aux}_{i} \neq 0.0, & f^{aux}_i \to f^{aux}_{i}\end{cases}\]
+
++ Cuando se usa sin los argumentos \( (x,y) \), la funcion \( np.where(condition) \) devuelve una tupla de arreglos con los indices donde \( condition \) es \( True \). Para arreglos de \( 1D \), el primer elemento de la tupla es el arreglo de estos indices, por ejemplo
+
+  #+begin_src python
+
+zeros_index = np.where(f == 0.0)[0] # Arreglo que contiene los indices donde f = 0
+
+  #+end_src
+
++ El objetivo es encontrar el primer punto donde \( f^{aux} \) cambia de negativo a positivo, i.e. la transicion de la region permitida a la prohibida. Se implementa en tres pasos:
+
+  - Calculo de signos
+
+    #+begin_src python
+
+signs = np.sign(f_aux)
+
+    #+end_src
+
+    Devuelve un arreglo con los signos de \( f^{aux} \)
+
+    \[\begin{cases} signs[i] = -1 & \text{si } f_i^{aux} < 0 \\ signs[i] = +1 & \text{si } f_i^{aux} > 0 \\ signs[i] = 0 & \text{si } f_i^{aux} = 0 \end{cases} \]
+
+  - Luego:
+
+    #+begin_src python
+
+diffs = np.diffs(signs)
+
+    #+end_src
+
+    Es un arreglo con las diferencias entre elementos adyacentes de \( signs \). Es cero cuando no hay cambio de signo entre \( f^{aux}_i \) y \( f^{aux}_{i+1} \), cuando cambia de negativo a positivo, \( diffs[i] = +2 \)
+
+  - Finalmente, usamos el arreglo \( diffs \) como condiciones
+
+    #+begin_src python
+
+sign_changes = np.where(diffs)[0]
+
+    #+end_src
+
+    cuando \( diffs[i] \) es positivo, es como pasar \( True \) y guarda el indice \( i \) en el primer arreglo de la tupla que devuelve \( np.where() \). Accedemos al arreglo con el primer elemento de la tupla.
+
++ Asi, el primer elemento de \( f^{aux} \) en la region prohibida es
+
+  #+begin_src python
+
+icl = sign_changes[-1] + 1
+f_aux[icl]
+
+  #+end_src
+
+
+
+** Integracion
+
+*** Condiciones iniciales hacia afuera
+
+La paridad de la funcion de onda determina los puntos iniciales para la recursion hacia adentro, se tiene que:
+
+\[ \psi_n(-x) = (-1)^n\psi_n(x) \]
+
++ Para \( n \) impar, los primeros dos puntos se inician como:
+  - \( \psi_0 = 0 \)
+  - \( \psi_1 = \dd{x} \) es un numero apropiadamente pequeno para las dimensiones del problema
+
++ Para \( n \) par:
+  - \( \psi_0 = 1 \) es un numero arbitrario positivo apropiado para las dimensiones del problema. La magnitud es arbitraria ya que procedemos a normalizar la solucion
+
+  - \( \psi_1 \) se determina por la formula de Numerov \ref{eq:numerov}
+
+    \[ \psi_1 = \frac{(12 - 10 f_0\psi_0)-f_{-1}\psi_{-1}}{f_1} \]
+    donde \( f_{-1} \) y \( \psi_{-1} \) son el valor de \( f \) y \( \psi \) en \( x_{-1} = - \Delta x \), pero por simetria, se tiene que \( (f_1,\psi_1) = (f_{-1},\psi_{-1}) \) para obtener
+
+    \begin{align*}
+        &\psi_1 = \frac{(12 - 10f_0\psi_0) - f_1y_1}{f_1} \\
+        &f_1\psi_1 + f_1\psi_1 = (12 - 10f_0\psi_0) \\
+        &\psi_1 = \frac{(12 - 10f_0\psi_0)}{2f_1}
+    \end{align*}
+
+*** Nodos y validacion de energia
+
++ La solucion \( \psi^L \) contiene todos los nodos de \( \psi(x) \), ya que \( \psi^R \) decae exponencialmente sin oscilar.
+
+  - Antes de acoplar \( \psi^L \) y \( \psi^R \), se verifica si \( \psi^L \) tiene el numero correcto de nodos para el \( n- \)esimo eigenvalor. Si no coincide, se ajustan las cotas de energia \( (E_{min}, E_{max}) \) y se reinicia el ciclo de biseccion.
+
++ La funcion \( outward\_ outward \) integration devuelve el conteo de cruces por cero \( (ncross) \) para la validacion
+
++ Para este paso consideramos que \( \psi \) es la solucion en \( [0,xmax] \), entonces el numero correcto de nodos se obtiene por simetria y considerando la paridad:
+
+  #+begin_src python
+
+# Adjuste de nodos por simetria basado en paridad del estado energetico
+if nodes % 2 == 0:
+    # Par
+    ncross *= 2
+else:
+    # Impar
+    ncross = 2 * ncross + 1
+
+# Update energy bounds if the node count is off.
+if ncross != nodes:
+    if ncross > nodes:
+        e_upper = e
+    else:
+        e_lower = e
+    continue  # Skip further steps if nodes do not match
+
+  #+end_src
+
+*** Condiciones iniciales hacia adentro
+
+Invertimos el orden de integracion, empezamos en la frontera hasta \( icl \). La formula de Numerov funciona igual que la integracion hacia afuera, entonces necesitamos los ultimos dos puntos \( \psi_{malla} \) y \( \psi_{malla-1}\):
+
++ Para \( \psi_{malla} \), si aplicamos directamente la condicion de frontera \( \psi(xmax) = 0 \), la recursion da un arreglo de puros ceros, entonces iniciamos con un valor arbitrariamente pequeno, apropiado para las dimensiones del problema, que en este caso es el paso de la malla
+
+  \[ \psi_{malla} = \dd{x} \]
+
++ Para \( \psi_{malla-1} \) usamos directamente la formula de Numerov, con \( \psi_{malla + 1} = 0 \)
+
+  \[ \psi_{malla-1} = \frac{(12-10f_{malla})\psi_{malla}}{f_{malla-1}} \]
+
+Usando estos valores podemos propagar el resto de \( \psi^R \) hasta el punto de retorno clasico.
+
+*** Implementacion
+
++ Integracion hacia afuera:
+
+  - Durante la integracion hacia adentro, el valor de \( \psi_{icl} \) (calculado previamente en la integracion hacia afuera) se sobreescribe. En general estos valores son diferentes y crean una discontinuidad en la solucion. Guardamos \( \psi^L_{icl} \) en una variable auxiliar \( psi\_icl \) antes de iniciar la integracion hacia adentro
+
+    #+begin_src python
+  psi = np.zeros_like(x)
+  # Iniciacion de psi basado en paridad
+  if nodes % 2:
+      # Impar
+      psi[0] = 0.0
+      psi[1] = dx
+  else:
+      # Par
+      psi[0] = 1.0
+      psi[1] = (6.0 - 5.0 * f[0]) * psi[0] / f[1]
+
+  psi_icl, ncross = outward_integration(psi, f, icl)
+
+  def outward_integration(psi, f, icl):
+      ncross = 0
+      for i in range(1, icl):
+          psi[i+1] = ((12.0 - 10.0)*f[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
+          ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
+      return psi[icl], ncross
+
+    #+end_src
+
++ Integracion hacia adentro:
+
+  - La solución general cerca de \( xmax \) es una superposicion de exponenciales crecientes/decrecientes. El rescale suprime artificialmente la parte divergente, i.e. no física, preservando el decaimiento exponencial válido en la region clasicamente prohibida
+
+   #+begin_src python
+
+# Inward integration on the tail: initialize boundary conditions.
+psi[-1] = dx
+psi[-2] = f_10[-1] * psi[-1] / f[-2]
+
+inward_integration(psi, f, icl, mesh)
+
+def inward_integration(psi, f, icl, mesh):
+    # Inward integration in [xmax, icl]
+    for i in range(mesh-1, icl, -1):
+        psi[i-1] = ((12.0 - 10.0)*f[i] * psi[i] - f[i+1] * psi[i+1]) / f[i-1]
+        if abs(psi[i-1]) > 1e10:
+            psi[i-1:-2] /= psi[i-1] # Rescale para suprimir comportamiento divergente
+
+  #+end_src
+
+
+** Acoplamiento y normalizacion
+
+*** Implementacion
+
++ Es una simple funcion que empalma \( \psi^R \) con \( \psi^L \) en \( x_c = icl*\Delta x \) escalando \( \psi^R \) por el factor
+
+  \[ \frac{\psi_{icl}^L}{\psi_{icl}^R} \]
+
++ Al tener una solucion continua \( \psi \) procedemos a normalizar:
+  - Como estamos aprovechando la simetria para solo calcular una mitad de \( \psi \), al normalizar tenemos que considerar que
+
+    \[ \int |\psi|^2 \dd{x} = \frac{1}{2} \int |\psi_{full}|^2 \dd{x} \]
+
+#+begin_src python
+
+# Normalizar funcion de onda
+scale_normalize_ho(psi, psi_icl, icl, x)
+
+def scale_normalize_ho(psi, psi_icl, icl, x):
+    # Match wavefunction at icl and normalize
+    scaling_factor = psi_icl / psi[icl]
+    psi[icl:-2] *= scaling_factor
+
+    norm = np.sqrt(np.trapezoid(2*psi**2, x))  # Symmetric normalization
+    psi /= norm
+
+#+end_src
+
+
+** Criterio de convergencia
+
+*** Determinacion de discontinuidad en la primer derivada
+
+Al haber normalizado la funcion de onda, nuestra solucion, en general tendra una discontinuidad en su primera derivada, que podemos expresar como
+
+\[ {\psi'}_{icl}^{R} - {\psi'}_{icl}^{L} \]
+
+Esta diferencia debe ser cero para una solucion apropiada, lo que solo ocurre cuando \( E \) esta muy cerca de ser un eigenvalor \( E_n \). El signo de la diferencia nos ayuda a entender si la energia de prueba \( E \) es muy alta o muy baja, para asi hacer una actualizacion apropiada en el metodo de biseccion.
+
+Con \( i = icl \), calculamos la discontinuidad en la primera derivada usando las expansiones de Taylor:
+
+\[ \psi_{i-1}^L = \psi_i^L - {\psi'}_i^L \Delta x + \frac{1}{2}{\psi''}_i^L (\Delta x)^2 + \order{(\Delta x)^3} \]
+\[ \psi_{i+1}^L = \psi_i^L + {\psi'}_i^L \Delta x + \frac{1}{2}{\psi''}_i^L (\Delta x)^2 + \order{(\Delta x)^3} \]
+
+Sumando estas dos expresiones, tomando en cuenta que al haber acoplado las recursiones, se tiene \( \psi_i^L = \psi_i^R = \psi_i \), y que \( {\psi''}_i^L = {\psi''}_i^{R} = -g_i\psi_i \), por el metodo de Numerov:
+
+\[ \psi^L_{i-1} + \psi^R_{i+1} = 2\psi_i + ({\psi'}_i^R - {\psi'}_i^L)\Delta x - g_i\psi_i(\Delta x)^2 + \order{(\Delta x)^3} \]
+
+esto es
+
+\[ {\psi'}_i^R - {\psi'}_i^L = \frac{\psi_{i-1}^L + \psi_{i+1}^R - [2-g_i(\Delta x)^2]\psi_i}{\Delta x} + \order{(\Delta x)^2} \]
+
+en terminos de \( f \), obtenemos la expresion para la discontinuidad en la primer derivada:
+
+\[ {\psi'}_i^R - {\psi'}_i^L = \frac{\psi_{i-1}^L + \psi_{i+1}^R - [14-12f_i]\psi_i}{\Delta x} + \order{(\Delta x)^2} \]
+
+*** Logica de biseccion
+
+La discontinuidad en la derivada
+
+\[ {\psi'}_i^R - {\psi'}_i^L \equiv ddelta  \]
+
+indica como la solucion \( \psi \) se desvia del decaimiento exponencial fisico en \( x>x_{rc}\). Su signo determina si \( E \) es demasiado alta o baja.
+
++ Para que \( \psi \) sea una solucion fisica:
+
+  - En la region clasicamente prohibida \( x> x_{rc} \), la solucion correcta debe decaer exponencialmente
+
+  - Para que \( \psi \) decaiga exponencialmente en la region clasicamente prohibida, la magnitud de \( {\psi'}^R \) debe ser mayor que la de \( {\psi'}^L \), lo que implica que la pendiente de la recta tangente en esta region es mas pronunciada.
+
++ El signo de \( \psi_i \) esta determinado por la paridad del estado energetico, con paridad par, \( \psi_i > 0 \) y con paridad impar \( \psi_i< 0 \). Luego el signo de \( ddelta \) nos dice:
+
+| Paridad \( \psi_i \) | \( ddelta > 0 \)                    | \( ddelta < 0 \)                    |
+|----------------------+-------------------------------------+-------------------------------------|
+| Par                  | Decae muy lento (\( E \) muy alta)  | Decae muy rapido (\( E \) muy baja) |
+| Impar                | Decae muy rapido (\( E \) muy baja) | Decae muy lento (\( E \) muy alta)  |
+|----------------------+-------------------------------------+-------------------------------------|
+
++ El producto \( ddelta * \psi_i \) codifica estos cuatro casos correctamente:
+
+  - Si \( ddelta * \psi_i > 0 \), ajustamos las cotas a la mitad inferior del intervalo
+
+  - Si \( ddelta * \psi_i < 0 \) ajustamos las cotas a la mitad superior del intervalo
+
++ Se declara convergencia cuando:
+
+  \[ e\_upper - e\_lower < tol \]
+
+  donde \( tol \) es una tolerancia arbitraria. La energia final es
+
+  \[ E_n \approx 0.5 * (e\_upper + e\_lower) \]
+
+
+*** Implementacion
+
+#+begin_src python
+
+# Compute the derivative discontinuity at the matching point
+ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
+
+# Check convergence: update energy bounds based on the sign of the discontinuity.
+if (e_upper - e_lower) < tol:
+    break
+
+if ddelta * psi[icl] > 0.0:
+    e_upper = e
+else:
+    e_lower = e
+
+#+end_src
+
+* Algoritmo de biseccion para el atomo de hidrogeno
+
+
+
+* Teoria de perturbaciones
 
 * Central Potentials
 

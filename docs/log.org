@@ -145,6 +145,7 @@ if ncross != nodes:
 
 #+end_src
 
+
 ** Inward integration
 
 + First set the last two points
@@ -310,3 +311,346 @@ def HO():
     e = 0.5 * (e_upper + e_lower)
 
 #+end_src
+
+
+* IA
+
+** Integration
+
+### **Sección: Integración Numérica**
+#### ***Nodos y Validación de Energía***
+- La solución \( \psi_L \) (integrada hacia afuera) contiene todos los nodos de \( \psi(x) \), ya que \( \psi_R \) (integrada hacia adentro) decae exponencialmente sin oscilar.
+- **Optimización**: Antes de acoplar \( \psi_L \) y \( \psi_R \), se verifica si \( \psi_L \) tiene el número correcto de nodos para el eigenvalor \( n \)-ésimo. Si no coincide, se ajustan las cotas de energía (\( E_{\text{min}}, E_{\text{max}} \)) y se reinicia el cálculo.
+- La función `outward_integration` devuelve el conteo de cruces por cero (`ncross`) para esta validación.
+
+#### ***Implementación en Python***
+##### **Integración hacia afuera**
+```python
+# Inicialización por paridad
+if nodes % 2:
+    psi[0] = 0.0    # Condición para n impar
+    psi[1] = dx     # Pequeño paso inicial
+else:
+    psi[0] = 1.0    # Condición para n par
+    psi[1] = (6.0 - 5.0 * f[0]) * psi[0] / f[1]  # Numerov con simetría
+
+def outward_integration(psi, f, icl):
+    ncross = 0
+    for i in range(1, icl):
+        psi[i+1] = ((12.0 - 10.0 * f[i]) * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
+        ncross += (psi[i] * psi[i+1] < 0.0)  # Conteo de nodos
+    return psi[icl], ncross  # Valor en icl y número de cruces
+```
+
+##### **Integración hacia adentro**
+```python
+# Condiciones iniciales en xmax
+psi[-1] = dx       # Evita solución trivial
+psi[-2] = (12.0 - 10.0 * f[-1]) * psi[-1] / f[-2]  # Numerov con ψ(xmax+Δx)=0
+
+def inward_integration(psi, f, icl, mesh):
+    for i in range(mesh-1, icl, -1):
+        psi[i-1] = ((12.0 - 10.0 * f[i]) * psi[i] - f[i+1] * psi[i+1]) / f[i-1]
+        if abs(psi[i-1]) > 1e10:  # Rescale para evitar overflow
+            psi[i-1:] /= psi[i-1]
+```
+
+---
+
+### **Mejoras Clave**
+1. **Estructura más Directa**
+   - Unificaste la explicación teórica y el código, pero separarlas en subsecciones (`Nodos`, `Implementación`) mejora la legibilidad.
+   - El pseudocódigo ahora incluye comentarios breves que resaltan la lógica crítica (ej. inicialización por paridad, rescale).
+
+2. **Precisión Técnica**
+   - Corregí un error tipográfico en la fórmula de Numerov (`(12.0 - 10.0)` → `(12.0 - 10.0 * f[i])`).
+   - Explícito que `ncross` cuenta los cambios de signo (nodos) con un comentario.
+
+3. **Optimización del Rescale**
+   - Clarifiqué que el rescale en `inward_integration` evita overflow numérico, no solo "comportamiento patológico".
+
+4. **Consistencia con la Física**
+   - Mencioné que \( \psi_R \) debe decaer exponencialmente (solución física), vinculándolo al rescale.
+
+---
+
+### **Sugerencias Adicionales**
+- Si el documento es extenso, añade hipervínculos a las secciones de *Acoplamiento* y *Bisección*.
+- Para usuarios avanzados, podrías añadir una nota sobre el método del shooting (ajuste de \( E \) vía derivada logarítmica).
+
+---
+** Normalizacion
+
+### **Sección: Acoplamiento y Normalización - Detalles de Implementación**
+
+#### **Problema Clave**
+Durante la integración hacia adentro, el valor de `ψ[icl]` (calculado previamente en la integración hacia afuera) se sobrescribe. Esto rompe la continuidad de la solución.
+→ **Solución**: Guardamos `ψ_L(icl)` en una variable auxiliar (`psi_icl`) antes de iniciar la integración hacia adentro.
+
+#### **Paso 1: Escalado para Continuidad**
+- **Objetivo**: Empalmar `ψ_R` con `ψ_L` en `x = icl` multiplicando `ψ_R` por un factor:
+  \[
+  \text{scaling\_factor} = \frac{\psi_L(\text{icl})}{\psi_R(\text{icl})}
+  \]
+- **Implementación**:
+  ```python
+  scaling_factor = psi_icl / psi[icl]  # ψ_R(icl) es el valor sobrescrito
+  psi[icl:] *= scaling_factor          # Escalar solo la región hacia adentro (x ≥ icl)
+  ```
+
+#### **Paso 2: Normalización Global**
+- **Objetivo**: Asegurar que \( \int |\psi(x)|^2 \, dx = 1 \).
+- **Método**: Integración numérica (regla del trapecio) y escalado:
+  ```python
+  norm = np.sqrt(np.trapezoid(psi**2, x))  # Calcula ‖ψ‖₂
+  psi /= norm                               # Normaliza
+  ```
+
+#### **Notas Clave**
+1. **Eficiencia**:
+   - El escalado solo se aplica a `ψ[icl:]` (no a toda la función), optimizando operaciones.
+2. **Simetría**:
+   La normalización usa `np.trapezoid` (integral simétrica), crucial para funciones pares/impares.
+
+```python
+def scale_normalize_ho(psi, psi_icl, icl, x):
+    # Escalar ψ_R para empalmar con ψ_L en icl
+    scaling_factor = psi_icl / psi[icl]
+    psi[icl:] *= scaling_factor
+
+    # Normalización global (‖ψ‖₂ = 1)
+    norm = np.sqrt(np.trapezoid(psi**2, x))
+    psi /= norm
+```
+
+---
+
+### **Diagrama del Proceso**
+```
+ψ_L (0 → icl)       ψ_R (icl ← xmax)
+|-------------|-----|-----------------|
+       ↑             ↑
+   (psi_icl)   (ψ[icl] sobrescrito)
+```
+
+---
+
+### **Por qué este orden**
+1. **Primero escalar**: Garantiza continuidad en `icl` antes de normalizar.
+2. **Luego normalizar**: Corrige la magnitud global sin romper el empalme.
+
+¿Necesitas más detalles sobre la elección del método de integración numérica?
+
+
+** Criterio de convergencia
+
+#### **Lógica de Bisección Basada en la Discontinuidad de la Derivada**
+Para determinar si la energía de prueba \( E \) es demasiado alta o baja, analizamos el producto:
+\[
+\text{ddelta} \cdot \psi_i \quad \text{donde} \quad \text{ddelta} = \psi_i^{R'} - \psi_i^{L'}
+\]
+Este producto combina la discontinuidad en la derivada (`ddelta`) con el valor de la función de onda en el punto de empalme (\( \psi_i \)), garantizando un criterio **válido para todos los estados** (paridad par o impar).
+
+---
+
+#### **Interpretación Física**
+1. **Para estados de paridad par (\( \psi_i > 0 \))**:
+   - \(\text{ddelta} > 0\):
+     La solución \( \psi_R \) decae demasiado lentamente (energía \( E \) **demasiado alta**).
+   - \(\text{ddelta} < 0\):
+     La solución \( \psi_R \) decae demasiado rápido (energía \( E \) **demasiado baja**).
+
+2. **Para estados de paridad impar (\( \psi_i < 0 \))**:
+   - \(\text{ddelta} > 0\):
+     La pendiente de \( \psi_R \) es **menos negativa** de lo necesario (energía \( E \) **demasiado baja**).
+   - \(\text{ddelta} < 0\):
+     La pendiente de \( \psi_R \) es **más negativa** de lo necesario (energía \( E \) **demasiado alta**).
+
+El producto \(\text{ddelta} \cdot \psi_i\) **unifica estos casos**:
+- \(\text{ddelta} \cdot \psi_i > 0 \implies E\) demasiado alta.
+- \(\text{ddelta} \cdot \psi_i < 0 \implies E\) demasiado baja.
+
+---
+
+#### **Implementación del Algoritmo de Bisección**
+```python
+ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
+
+if (e_upper - e_lower) < tol:
+    break  # Convergencia alcanzada
+
+if ddelta * psi[icl] > 0.0:
+    e_upper = e  # Ajustar a la mitad inferior del intervalo
+else:
+    e_lower = e  # Ajustar a la mitad superior del intervalo
+```
+
+#### **Explicación del Código**
+1. **Cálculo de `ddelta`**:
+   Usamos la fórmula de Numerov para estimar la discontinuidad en la derivada en \( x_c \).
+2. **Actualización de las cotas**:
+   - Si \(\text{ddelta} \cdot \psi_i > 0\): \( E \) está sobrestimada → reducir el intervalo a \([E_{\text{lower}}, E]\).
+   - Si \(\text{ddelta} \cdot \psi_i < 0\): \( E \) está subestimada → reducir el intervalo a \([E, E_{\text{upper}}]\).
+3. **Convergencia**:
+   El proceso se repite hasta que el intervalo \([E_{\text{lower}}, E_{\text{upper}}]\) sea menor que la tolerancia `tol`.
+
+---
+
+#### **Ejemplo Gráfico**
+Para un estado con \( \psi_i < 0 \) (impar):
+- Si \(\text{ddelta} = +0.5\) (pendiente menos negativa de lo esperado):
+  \(\text{ddelta} \cdot \psi_i < 0 \implies E\) demasiado baja.
+- Si \(\text{ddelta} = -0.5\) (pendiente más negativa de lo esperado):
+  \(\text{ddelta} \cdot \psi_i > 0 \implies E\) demasiado alta.
+
+---
+
+#### **Notas Clave**
+- **Robustez**: El producto \(\text{ddelta} \cdot \psi_i\) evita tener que verificar la paridad del estado manualmente.
+- **Eficiencia**: La bisección converge exponencialmente, típicamente en \( \log_2(\frac{E_{\text{max}} - E_{\text{min}}}{\text{tol}}) \) pasos.
+- **Tolerancia**: Valores típicos de `tol` son \( 10^{-6} \) a \( 10^{-10} \) (dependiendo de la precisión requerida).
+
+Esta estrategia garantiza que el método funcione para **todos los eigenestados** del potencial, sin necesidad de lógica adicional.
+
+
+** COnvergencia
+
+### **Lógica de Bisección para la Ecuación de Schrödinger**
+
+#### **Fundamento del Criterio de Convergencia**
+Para determinar si la energía de prueba \( E \) es correcta, analizamos el comportamiento de la función de onda en el punto de empalme \( x_c = \text{icl} \cdot \Delta x \). La clave está en:
+
+1. **Discontinuidad en la derivada**:
+   \[
+   \text{ddelta} = \psi_i^{R'} - \psi_i^{L'}
+   \]
+   donde:
+   - \(\psi_i^{L'}\): Derivada de la solución integrada desde \( x = 0 \).
+   - \(\psi_i^{R'}\): Derivada de la solución integrada desde \( x = x_{\text{max}} \).
+
+2. **Comportamiento físico requerido**:
+   - En la región prohibida (\( x > x_c \)), la solución correcta debe **decaer exponencialmente**.
+   - La magnitud de \(\psi^{R'}\) debe ser mayor que \(\psi^{L'}\) para garantizar este decaimiento.
+
+#### **Interpretación del Signo de `ddelta`**
+El signo de `ddelta` depende críticamente del signo de \(\psi_i\) (determinado por la paridad del estado):
+
+| Paridad  | \(\psi_i\) | \(\text{ddelta} > 0\)                          | \(\text{ddelta} < 0\)                          |
+|----------|------------|------------------------------------------------|------------------------------------------------|
+| **Par**  | \( + \)    | Decaimiento demasiado lento (\( E \) alta)     | Decaimiento demasiado rápido (\( E \) baja)     |
+| **Impar**| \( - \)    | Pendiente menos negativa (\( E \) baja)        | Pendiente más negativa (\( E \) alta)          |
+
+#### **Unificación de Casos con el Producto \(\text{ddelta} \cdot \psi_i\)**
+Para evitar tener que verificar la paridad explícitamente, usamos el producto:
+\[
+\text{ddelta} \cdot \psi_i
+\]
+- **Si \( > 0 \)**:
+  - Para \(\psi_i > 0\): \( E \) demasiado alta.
+  - Para \(\psi_i < 0\): \( E \) demasiado alta (consistente con el flip de signo).
+- **Si \( < 0 \)**:
+  - Para \(\psi_i > 0\): \( E \) demasiado baja.
+  - Para \(\psi_i < 0\): \( E \) demasiado baja.
+
+#### **Implementación del Algoritmo**
+```python
+# Cálculo de la discontinuidad en la derivada
+ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
+
+# Criterio de convergencia
+if (e_upper - e_lower) < tol:
+    break  # Solución encontrada
+
+# Actualización de cotas de energía
+if ddelta * psi[icl] > 0.0:
+    e_upper = e  # Ajustar a la mitad inferior
+else:
+    e_lower = e  # Ajustar a la mitad superior
+```
+
+#### **Ejemplo Numérico**
+Para un estado con \(\psi_i = -0.5\) (impar) y \(\text{ddelta} = +0.3\):
+- \(\text{ddelta} \cdot \psi_i = -0.15 < 0\) → \( E \) demasiado baja.
+- Sin el producto, \(\text{ddelta} > 0\) sugeriría erróneamente \( E \) demasiado alta.
+
+#### **Conclusión**
+El producto \(\text{ddelta} \cdot \psi_i\) es un **criterio universal** que:
+1. Elimina la ambigüedad del signo de \(\psi_i\).
+2. Garantiza que la energía se ajuste correctamente para cualquier estado.
+3. Es computacionalmente trivial (solo una multiplicación extra).
+
+
+
+
+
+
+
+
+
+
+*
+#### **1. Discretización de Funciones Continuas**
+Para representar funciones continuas \( \psi(x) : x \in I \subset \mathbb{R} \to \mathbb{R} \) de forma numérica:
+- **Dominio**: Se discretiza en una malla equiespaciada \( x_i = i \cdot \Delta x \), donde \( i \in \{0, 1, \dots, \text{mesh}\} \).
+- **Codominio**: Los valores de \( \psi(x_i) \) se almacenan en un arreglo \( \psi_i \) indexado, donde:
+  \[
+  \psi_i \equiv \psi(x_i) \quad \text{corresponde a} \quad \texttt{psi[i]} \quad \text{en Python.}
+  \]
+
+#### **2. Implementación en Python**
+- **Arreglos indexados desde cero**:
+  Para una malla con \( \text{mesh} \) intervalos (y \( \text{mesh} + 1 \) puntos), el último elemento del arreglo es:
+  ```python
+  psi[mesh]  # Acceso al valor en x_max = mesh * Δx
+  ```
+  **Ejemplo**:
+  ```python
+  # Malla con 100 intervalos (101 puntos)
+  mesh = 100
+  psi = np.zeros(mesh + 1)  # psi[0], psi[1], ..., psi[100]
+  ```
+
+#### **3. Convenciones de Nombres**
+- **Variables en código vs. notación matemática**:
+  | **Concepto Matemático**       | **Variable en Código** | **Ejemplo**                     |
+  |-------------------------------|------------------------|----------------------------------|
+  | Solución izquierda \( \psi^L \) | `psi_L`                | `psi_L[i]` (valor en \( x_i \)) |
+  | Solución derecha \( \psi^R \)  | `psi_R`                | `psi_R[icl]` (punto de empalme) |
+  | Cota inferior de energía \( E_{\text{min}} \) | `e_lower`         | `e_lower = -10.0`               |
+  | Tolerancia \( \epsilon \)      | `tol`                  | `tol = 1e-6`                    |
+
+#### **4. Notación para Derivadas Discretas**
+La discontinuidad en la derivada \( \psi_i^R' - \psi_i^L' \) se calcula numéricamente como:
+\[
+\texttt{ddelta} = \frac{\psi_{i+1}^R + \psi_{i-1}^L - (14 - 12 f_i) \psi_i}{\Delta x},
+\]
+donde \( f_i \) depende del potencial (ver implementación).
+
+---
+
+### **Ejemplo Completo**
+```python
+import numpy as np
+
+# Parámetros de la malla
+mesh = 1000  # Número de intervalos
+dx = 0.01    # Paso espacial
+x = np.linspace(0, mesh * dx, mesh + 1)  # Dominio discretizado
+
+# Función de onda discretizada (ejemplo: estado base)
+psi = np.zeros(mesh + 1)  # psi[0] a psi[mesh]
+
+# Acceso a valores:
+print(psi[0])    # ψ(x=0)
+print(psi[mesh]) # ψ(x=x_max)
+```
+
+#### **Notas Clave**
+1. **Consistencia**:
+   La notación \( \psi_i \leftrightarrow \texttt{psi[i]} \) es universal en el documento/código.
+2. **Precisión**:
+   El tamaño de la malla (\( \text{mesh} + 1 \)) asegura que \( x_{\text{max}} = \text{mesh} \cdot \Delta x \).
+3. **Legibilidad**:
+   Los nombres de variables en código (`e_lower`, `psi_R`, etc.) reflejan directamente su significado matemático.
+
+---
