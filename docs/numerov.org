@@ -535,13 +535,14 @@ else:
     # Impar
     ncross = 2 * ncross + 1
 
-# Update energy bounds if the node count is off.
+# Si los nodos no son correctos
+# Actualizar cotas de energia
 if ncross != nodes:
     if ncross > nodes:
         e_upper = e
     else:
         e_lower = e
-    continue  # Skip further steps if nodes do not match
+    continue  # Reiniciar ciclo de biseccion
 
   #+end_src
 

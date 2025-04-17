@@ -68,7 +68,7 @@ def solve_atom(n=1, l=0, Z=1, rmax=500.0, mesh=1421, max_iter=100, tol=1e-10):
         psi[1] = (r[1] ** (l + 1)) * (1 - (2 * Z * r[1])/(2 * l + 2)) / np.sqrt(r[1])
 
         # Outward integration from the origin up to index icl.
-        psi_icl, ncross, f_10 = outward_integration(psi, f, f_10, icl)
+        psi_icl, ncross = outward_integration(psi, f, f_10, icl)
 
         # Check that the right number of nodes are within the energy bounds
         if ncross != nodes_expected:
@@ -135,7 +135,7 @@ def outward_integration(psi, f, f_10, icl):
     for i in range(1, icl):
         psi[i+1] = (f_10[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
         ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
-    return psi[icl], ncross, f_10
+    return psi[icl], ncross
 
 def inward_integration(psi, f, icl, mesh, f_10):
     # Inward integration in [xmax, icl]
@@ -265,7 +265,7 @@ def solve_atom_bisection(n=1, l=0, Z=1, rmax=500.0, mesh=1421, max_iter=100, tol
         psi[1] = (r[1] ** (l + 1)) * (1 - (2 * Z * r[1])/(2 * l + 2)) / np.sqrt(r[1])
 
         # Outward integration from the origin up to index icl.
-        psi_icl, ncross, f_10 = outward_integration(psi, f, f_10, icl)
+        psi_icl, ncross = outward_integration(psi, f, f_10, icl)
 
         # Check that the right number of nodes are within the energy bounds
         if ncross != nodes_expected:
@@ -283,15 +283,15 @@ def solve_atom_bisection(n=1, l=0, Z=1, rmax=500.0, mesh=1421, max_iter=100, tol
         scale_normalize_atom1(psi, psi_icl, icl, x, r2)
 
         # Compute derivative discontinuity
-        djump = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
+        ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
 
         # Check convergence
         if (e_upper - e_lower) < tol:
             # print(f"Reached convergence after {iter} iterations")
             break
 
-        # Adjust energy based on djump sign
-        if djump * psi[icl] > 0.0:
+        # Adjust energy based on ddelta sign
+        if ddelta * psi[icl] > 0.0:
             e_upper = e
         else:
             e_lower = e
@@ -341,12 +341,14 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
         psi = init_ho_wavefunction(nodes, dx, f)
 
         # Outward integration from x=0 until icl.
-        psi_icl, ncross, f_10 = outward_integration(psi, f, f_10, icl)
+        psi_icl, ncross = outward_integration(psi, f, f_10, icl)
 
         # Adjust the node count according to the symmetry properties.
         if nodes % 2 == 0:
+            # Even
             ncross *= 2
         else:
+            # Odd
             ncross = 2 * ncross + 1
 
         # Update energy bounds if the node count is off.
@@ -362,17 +364,16 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
         psi[-2] = f_10[-1] * psi[-1] / f[-2]
         inward_integration(psi, f, icl, mesh, f_10)
 
-        # Normalize the wavefunction (a dedicated scale/normalize function can be used).
         scale_normalize_ho(psi, psi_icl, icl, x)
 
         # Compute the derivative discontinuity at the matching point
-        djump = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
+        ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
 
         # Check convergence: update energy bounds based on the sign of the discontinuity.
         if (e_upper - e_lower) < tol:
             break
 
-        if djump * psi[icl] > 0.0:
+        if ddelta * psi[icl] > 0.0:
             e_upper = e
         else:
             e_lower = e
@@ -385,12 +386,11 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
 def init_ho_wavefunction(nodes, dx, f):
     psi = np.zeros_like(f)
     if nodes % 2:
-        # Odd parity: psi starts with zero and a small non-zero derivative.
+        # Odd parity
         psi[0] = 0.0
         psi[1] = dx
     else:
-        # Even parity: psi[0] is set to unity with a derivative chosen to satisfy
-        # the Numerov prescription.
+        # Even parity
         psi[0] = 1.0
         psi[1] = 0.5 * (12.0 - 10.0 * f[0]) * psi[0] / f[1]
     return psi
@@ -403,7 +403,7 @@ def f_and_icl_ho(vpot, e, dx):
     f = 2*(vpot - e) * (dx ** 2 / 12)
 
     # Avoid division by zero
-    f = np.where(f == 0.0, 1e-20, f)
+    f = np.where(f == 1.0, 1+1e-20, f)
 
     # Classical turning point is the last sign change in f + 1
     sign_changes = np.where(np.diff(np.sign(f)))[0]
@@ -422,7 +422,7 @@ def scale_normalize_ho(psi, psi_icl, icl, x):
     # print(f"Rescaling factor: {scaling_factor:.6f}")
     # print(f"Wavefunction after rescaling: psi[icl]={psi[icl]:.6f}, psi[mesh]={psi[-1]:.6f}")
 
-    norm = np.sqrt(np.trapezoid(psi**2, x))  # Symmetric normalization
+    norm = np.sqrt(np.trapezoid(2*psi**2, x))  # Symmetric normalization
     psi /= norm
 
     # print(f"Normalization factor: {norm:.6f}")
