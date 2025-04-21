@@ -150,7 +150,7 @@ def scale_normalize_atom1(psi, psi_icl, icl, x, r2):
     scaling_factor = psi_icl / psi[icl]
     psi[icl:] *= scaling_factor
 
-    norm = np.sqrt(np.trapezoid(psi**2 * r2, x))  # Symmetric normalization
+    norm = np.sqrt(np.trapezoid(psi**2 * r2, x))  
     psi /= norm
 
 
