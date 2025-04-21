@@ -45,6 +45,19 @@ Testing hydrogen_atom for 6 states with l=0
 --------------------------------------------------------------------------------
 ```
 
+
+### ionized Helium Atom ground state and first excited state (`HEp_states.py`)
+
+```text
+Testing ionized Helium atom for 2 states with l=0
+--------------------------------------------------------------------------------
+  n     Energy (Ry)     Theoretical           Error   Iterations    Time (ms)
+--------------------------------------------------------------------------------
+  1     -4.00000000       -4.000000      1.0008e-09            9        5.686
+  2     -1.00000000       -1.000000      6.2772e-10           12        7.611
+--------------------------------------------------------------------------------
+```
+
 ### Harmonic Oscillator Levels (`HO_states.py`)
 
 ```text
@@ -60,6 +73,7 @@ Testing harmonic_oscillator for 6 states
   5      5.50000133      5.50000000        1.33e-06           41        8.909
 ------------------------------------------------------------------------------
 ```
+
 
 ## Use library
 
