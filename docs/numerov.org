@@ -1,7 +1,8 @@
 #+title: Metodo de Numerov
-#+author: Rafael Obed Egurrola Corella
+#+author: Rafael Corella, Carlos Felix, Bryan Campa
 #+setupfile: ~/uni/latex.org
 #+startup: latexpreview
+
 
 * Método de Numerov
 
@@ -294,6 +295,7 @@ Usamos tres diferentes maneras de representar el mismo numero:
 
 \[ \underbrace{\psi_R(x)}_{\text{Funcion que depende de \( x \)}} \to \underbrace{\psi_i^R}_{\text{iesimo valor de \( \psi^R \)}} \to \underbrace{psi\_R[i]}_{\text{Elemento \( i \) del arreglo \( psi\_R \)}} \]
 
+
 * Algoritmo de biseccion para el oscilador harmonico
 
 ** Descripcion general
@@ -412,7 +414,7 @@ Es el punto, \( x_{rc} \), que marca el limite entre las regiones clasicamente p
 # Funcion auxiliar
 f_aux = 2*(V-E) * (dx**2/12)
 
-# Evadimos division entre cero
+# Aseguramos que haya cambio de signo evitando el cero
 f_aux = np.where(f == 0.0, 1e-20, f_aux)
 
 
@@ -428,7 +430,7 @@ icl = sign_changes[-1] + 1 # Primer punto en la region prohibida
 
   \[ f = 1 - f^{aux} \]
 
-+ Dado que \( f \) se utiliza como denominador en el metodo de Numerov, debemos garantizar que ningun elemento sea exactamente cero. Utilizamos la funcion \( np.where(condition, x, y) \):
++ En el raro caso en el que \( f^{aux} \) sea exactamente igual a cero, no se detecta correctamente el cambio de signo. Utilizamos la funcion \( np.where(condition, x, y) \) para asegurar que se puedan detectar los cambios de signo correctamente:
 
   - Es una funcion vectorizada que actua como un \( if-else \) sobre arreglos de NumPy
 
@@ -722,11 +724,141 @@ else:
 
 #+end_src
 
+
 * Algoritmo de biseccion para el atomo de hidrogeno
 
+Para resolver la ecuacion radial modificamos ligeramente el algoritmo
+
++ Al hacer la transformacion a coordenadas logaritmicas, ajustamos la malla
+
+  - \( x = \ln(Z*r) \), donde \( r \) es la coordenada radial fisica
+
++ El potencial efectivo es
+
+   #+begin_src python
+v_eff = -2*Z/r + l*(l + 1)/r**2
+   #+end_src     
+
++ Iniciacion de la funcion de onda tomando en cuenta su comportamiento asintotico
+
+   #+begin_src python
+
+     psi[0] = (r[0] ** (l + 1)) * (1 - (2 * Z * r[0])/(2 * l + 2)) / np.sqrt(r[0])
+     psi[1] = (r[1] ** (l + 1)) * (1 - (2 * Z * r[1])/(2 * l + 2)) / np.sqrt(r[1])
+
+     psi_icl, ncross = outward_integration(psi, f, f_10, icl)
+
+   #+end_src
+
++ Usando \( \psi_0 \) y \( \psi_1 \) propagamos la solucion con el paso constante de la malla logaritmica \(
+   \dd{x} \) usando la formula de Numerov
+
++ Antes de hacer la integracion hacia adentro, consideramos que la solucion debe tener \( n - l - 1 \) nodos
+
+   #+begin_src python
+
+     # Checar que las cotas contienen el numero correcto de nodos
+     nodes_expected = n - l - 1
+     if ncross != nodes_expected:
+         if ncross > nodes_expected:
+             e_upper = e
+         else:
+             e_lower = e
+         e = 0.5 * (e_lower + e_upper)
+         continue  # Saltarse la integracion hacia adentro si la cantidad de nodos es incorrecta
+
+   #+end_src
+
++ Para la integracion hacia adentro, iniciamos los ultimos dos valores de la misma manera
+
+   #+begin_src python
+
+     psi[-1] = dx
+     psi[-2] = f_10[-1] * psi[-1] / f[-2]
+     inward_integration(psi, f, icl, mesh, f_10)
+
+   #+end_src
+
++ La normalizacion se hace en coordenadas esfericas
+
+   #+begin_src python
+
+     norm = np.sqrt(np.trapezoid(psi**2 * r**2, x))  
+     psi /= np.sqrt(norm)
+
+   #+end_src
+   
 
 
 * Teoria de perturbaciones
+
+Para mejorar la convergencia, podemos utilizar teoria de perturbaciones para obtener correcciones de energia, asi cambiamos el criterio de convergencia para cuando la correccion en la energia se mas pequena que la tolerancia, usamos la funcion:
+
+#+begin_src python
+  def update_energy(icl, f, psi, dx, ddx12, e, e_lower, e_upper):
+      # ddx12 es una constante auxiliar -> dx**2 / 12.0
+      # f -> 1 + ddx12 * (lnhfsq + r2 * (e - vpot)) dada por Numerov
+      # icl es el primer indice en la region prohibida
+      i = icl
+      psi_cusp = (psi[i-1] * f[i-1] + psi[i+1] * f[i+1] + 10 * f[i] * psi[i]) / 12.0
+      dfcusp = f[i] * (psi[i] / psi_cusp - 1.0)
+      de = dfcusp / ddx12 * (psi_cusp ** 2) * dx
+
+      if de > 0:
+          e_lower = e
+      elif de < 0:
+          e_upper = e
+      e += de
+      e = max(min(e, e_upper), e_lower)
+      return e, e_lower, e_upper, de # Devuelve la energia correjida y nuevas cotas
+#+end_src
+
++ Usando la formula de Numerov, calculamos \( \psi_{icl} \) tomando \( icl-1 \) o \( icl+1 \) como punto central, luego tenemos la cantidad \( psicusp \) que es el valor calculado usando \( icl \) como punto central. En general \( psicusp \neq \psi_{icl} \)
+
++ Usando teoria de perturbaciones, consideramos a la funcion donde \( psicusp \neq \psi_{icl} \) como la solucion exacta a un problema diferente; uno en el que se superimpone una funcion delta \( v_0\delta(x-x_c) \) en \( x_c \equiv x_{icl} \) (porque estamos en la malla logaritmica) al potencial. La presencia de una delta causa una discontinuidad en la primera derivada y el tamano de la discontinuidad esta relacionada al coeficiente de la delta. Al conocer este coeficiente, podemos dar una estimacion, basada en teoria de perturbaciones, de la diferencia entre el eigenvalor actual (para este potencial diferente) y el eigenvalor para el potencial que nos interesa
+
++ Para lidiar con la delta en una integracion numerica, asumimos que solo tiene un valor en el intervalo \( \Delta x \) centrado en \( \psi_{icl} \).
+
++ La formula de Numerov que usamos es
+
+   \[ \psi_{i+1}f_{i+1} = (12-10f_i)\psi_i - f_{i-1}\psi_{i-1} \]   
+
+   donde normalmente extraemos \( \psi_{i+1} \) dividiento entre \( f_{i+1} \), pero ahora suponemos que \( f_{icl} \) tiene un valor diferente que no conocemosd \( fcusp \), de modo que nuestra funcion satisface la formula de Numerov tambien en un punto \( icl \). Entonces se debe cumplir lo siguiente:
+
+   \[ fcusp * psicusp = f_{icl}*\psi_{icl} \]
+
+   ya que este producto esta dado por el metodo de Numerov integrando desde \( icl-1 \) hasta \( icl+1 \) y \( psicusp \) es el valor que la funcion \( \psi \) debe tener para que satisfaga la formula de Numerov tambien en \( icl \). Como consecuencia, el valor de \( dfcusp \) es solamente \( fcusp-f_{icl} \), o bien \( \delta f \)
+
++ El siguente paso es calcular la variacion \( \delta V \) del potencial \( V(r) \) correspondiente a \( \delta f \). De la ecuaciond de Numerov \( \psi''(x) = g(x)\psi(x) \), para la ecuacion radial tenemos
+
+   \[ g(x) = \frac{2m}{\hbar^2}r^2(x) (E-V(r(x))) - (l+\frac{1}{2})^2 \]
+
+   diferenciando se obtiene
+
+   \[ \delta g(x) = - (2m/\hbar^2)r^2 \delta V \]
+
+   dado que \( f(x) = 1+g(x) (\Delta x^2/12) \), tenemos \( \delta g = (12/\Delta x^2) \delta f \), por lo que
+
+   \[ \delta V = - \frac{\hbar^2}{2m}\frac{1}{r^2} \frac{12}{\Delta x^2}\delta f \]
+
++ Teoria de perturbaciones a primer orden da la variacion del eigenvalor correspondiente
+
+   \[ \delta e = \ev{\delta V}{\phi} = \int |\psi(x)|^2r(x)^2 \delta V \dd{x} \]
+
+   donde \( \phi \) es la solucion radial completa y \( \psi \) es la funcion auxiliar que estamos trabajando
+
++ Escribimos la integral como una suma finita sobre puntos de la malla, con una sola contribucion diferente de cero proveniente de la region \( \Delta x \) centrada en el punto \( x_c = x_{icl} \). Finalmente la correccion de energia:
+
+   \[ \delta e = |\psi(x_c)|^2r(x_c)^2 \delta V \Delta x = - \frac{\hbar^2}{2m}\frac{12}{\Delta x^2}|\psi(x_c)|^2 \Delta x \delta f \]
+
+   esta es la expresion que utilizamos para calcular diferencia entre el eigenvalor para el potencial con la delta superimpuesta y el potencial correcto. Ya que en el primer paso, esta aproximacion puede tener errores muy grandes, usamos
+
+   #+begin_src python
+     e = max(min(e, e_upper), e_lower)
+   #+end_src
+
+   para que la nueva energia no se salga de las cotas de energia.
+
 
 * Central Potentials
 
@@ -762,8 +894,6 @@ Esto significa que la funcion \( |\chi(r)|^2 \) se puede interpretar directament
 esta es la forma de la ecuacion de Schrodinger unidimensional para una particula bajo un potencial efectivo
 
 \[ \hat{V}(r) = V(r) + \frac{\hbar^2 l(l+1)}{2mr^2} \]
-
-** Potencial de Coulomb
 
 
 ** Malla Logaritmica
@@ -825,3 +955,4 @@ Para obtener una ecuacion que se pueda integrar sobre una malla logaritmica, ten
 \[ y(x) = \frac{1}{\sqrt{r}}\chi(r(x)) \]
 
 \[ \dv[2]{y}{x} + \qty[\frac{2m_e}{\hbar^2}r^2(E-V(r)) - \qty(l + \frac{1}{2})^2]y(x) = 0 \]
+

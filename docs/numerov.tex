@@ -1,4 +1,4 @@
-% Created 2025-04-15 Tue 20:51
+% Created 2025-04-20 Sun 17:29
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -12,24 +12,21 @@
 \usepackage{amssymb}
 \usepackage{capt-of}
 \usepackage{hyperref}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{amssymb}
 \usepackage{physics}
 \usepackage{bm}
-\usepackage{hyperref}
-\usepackage{graphicx}
 \usepackage{geometry}
 \geometry{a4paper, margin=1in}
-\author{Rafael Obed Egurrola Corella}
+\usepackage{hyperref}
+\usepackage{listings}
+\author{Rafael Corella, Carlos Felix, Bryan Campa}
 \date{\today}
 \title{Metodo de Numerov}
 \hypersetup{
- pdfauthor={Rafael Obed Egurrola Corella},
+ pdfauthor={Rafael Corella, Carlos Felix, Bryan Campa},
  pdftitle={Metodo de Numerov},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 31.0.50 (Org mode 9.7.22)}, 
+ pdfcreator={},
  pdflang={English}}
 \begin{document}
 
@@ -37,7 +34,7 @@
 \tableofcontents
 
 \section{Método de Numerov}
-\label{sec:org0e93a3f}
+\label{sec:org58b07f0}
 
 Método numérico desarrollado por el astrónomo ruso Boris Vasilyevich Numerov en la década de 1910. Se basa en desarrollar la expansión de Taylor de una función \(y : I \subset \mathbb{R} \to \mathbb{R}\) alrededor de un punto \(x_0 \in I\), donde \(y\) es solución a la ecuación diferencial de segundo orden
 
@@ -124,7 +121,7 @@ se reescribe la formula de Numerov
 
 Este metodo se aplica a los sistemas fisicos que se pueden modelar con una ecuacion diferencial del tipo \ref{eq:numerov-eq}. En particular vamos a resolver la ecuacion de Schrodinger unidimensional independiente del tiempo para el sistema de oscilador armonico y el atomo de hidrogeno, notamos que hay mas ecuaciones interesantes que se pueden resolver como la ecuacion de Poisson.
 \section{Oscilador Harmonico}
-\label{sec:org26eee2f}
+\label{sec:orgfbc7872}
 
 Al aplicar el metodo de separacion de variables la ecuacion de Schrodinger se obtiene la ecuacion de Schrodinger unidimensional para una funcion \(\psi = \psi(x)\)
 
@@ -182,10 +179,10 @@ El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimens
 
 con \(V(\xi) = \frac{1}{2}\xi^2\).
 \subsection{Solucion Exacta}
-\label{sec:org1b64bd6}
+\label{sec:orgf4bf1a0}
 
 \subsubsection{Analisis asintotico}
-\label{sec:org0d4d4c2}
+\label{sec:org2788a5b}
 
 Para grande \(\xi\), las soluciones de (\ref{eq:ho}), donde \(\epsilon\) se puede despreciar, son de la forma
 
@@ -301,10 +298,10 @@ Finalmente, la funcion de onda correspondiente a la energia \(E_n\) es
 
 \[ \psi_n(\xi) = H_n(\xi)e^{-\xi^2/2} \]
 \section{Notacion y convenciones numericas}
-\label{sec:org2ae4a3d}
+\label{sec:org1db1dbd}
 
 \subsection{Discretizacion y funciones continuas}
-\label{sec:orgadc74eb}
+\label{sec:org2c1a08d}
 
 Para representar funciones continuas \(\psi(x) : x\in I \subset \mathbb{R} \to \mathbb{R}\) de forma numerica:
 
@@ -318,11 +315,11 @@ Para representar funciones continuas \(\psi(x) : x\in I \subset \mathbb{R} \to \
 \[ \psi_i \equiv \psi(x_i) \to \psi[i] \text{ en Python} \]
 \end{itemize}
 \subsection{Implementacion en Python}
-\label{sec:org37bd776}
+\label{sec:org0ac15c8}
 
 Para una malla con \(mesh\) intervalos (\(mesh + 1\) puntos), el ultimo elemento del arreglo es
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 mesh = 100
 x = np.linspace(mesh+1)
@@ -330,22 +327,22 @@ psi = f(x) # Alguna funcion de x
 psi[0] # Primer elemento de psi
 psi[mesh] # Ultimo elemento de psi
 
-\end{verbatim}
+\end{lstlisting}
 
 \begin{itemize}
 \item Como Python es cero indexado, hacer el tamano de la malla \(mesh + 1\) asegura que \(x_{max} = mesh * \Delta x\) y que \(\psi_{xmax} = psi[mesh]\)
 \end{itemize}
 \subsection{Notacion}
-\label{sec:org485ef93}
+\label{sec:org2b2993a}
 
 Usamos tres diferentes maneras de representar el mismo numero:
 
 \[ \underbrace{\psi_R(x)}_{\text{Funcion que depende de \( x \)}} \to \underbrace{\psi_i^R}_{\text{iesimo valor de \( \psi^R \)}} \to \underbrace{psi\_R[i]}_{\text{Elemento \( i \) del arreglo \( psi\_R \)}} \]
 \section{Algoritmo de biseccion para el oscilador harmonico}
-\label{sec:org27107f9}
+\label{sec:org1a96e36}
 
 \subsection{Descripcion general}
-\label{sec:orgecd7083}
+\label{sec:org42df0e8}
 
 \begin{itemize}
 \item \textbf{Inicializacion de la malla}
@@ -358,7 +355,7 @@ Usamos tres diferentes maneras de representar el mismo numero:
 \item El potencial de oscilador harmonico es
 
 \[ V(x) = \frac{1}{2}x^2 \to V_i = 0.5*x^2_i \]
-\item \hyperref[sec:orgd400a5e]{Implementacion en Python}
+\item \hyperref[sec:orgdb4bc66]{Implementacion en Python}
 \end{itemize}
 
 \item \textbf{Busqueda de eigenvalores por biseccion}
@@ -375,7 +372,7 @@ Con el objetivo de encontrar \(E\) tal que la solucion dada por la formula de Nu
 
 \[ f^{aux} = 2(V-E) \frac{\Delta x^2}{12} \]
 
-\item Detalles fisicos: \hyperref[sec:org17422d4]{Punto de retorno clasico}
+\item Detalles fisicos: \hyperref[sec:org7b13b2c]{Punto de retorno clasico}
 \end{itemize}
 
 \item \textbf{Integracion numerica de \(\psi(x)\)}
@@ -389,7 +386,7 @@ Se hacen dos integraciones
 
 \item En general estas dos funciones tienen valores diferentes en \(x_c = icl * \Delta x\)
 
-\item \hyperref[sec:orgff92265]{Ver integracion}
+\item \hyperref[sec:org4d4f12b]{Ver integracion}
 \end{itemize}
 
 \item \textbf{Acoplamiento y normalizacion}
@@ -413,7 +410,7 @@ y se normaliza
 
 \[ \psi \to \frac{\psi}{\int 2|\psi|^2 \dd{x}} \]
 
-\item Detalles de la implementacion \ref{sec:org2fa34bd}
+\item Detalles de la implementacion \ref{sec:orgebecf68}
 \end{itemize}
 
 \item \textbf{Criterio de convergencia}
@@ -427,26 +424,26 @@ y se normaliza
 \item Si \(\Delta \psi' * \psi_{icl} < 0 \implies E\) demasiado bajo, entonces se actualiza la cota inferior \(e\_lower = E\)
 \end{itemize}
 
-\item \hyperref[sec:org3d7ba66]{Detalles de convergencia}
+\item \hyperref[sec:org2c822a5]{Detalles de convergencia}
 \end{itemize}
 \end{itemize}
 \subsection{Malla}
-\label{sec:orgd400a5e}
+\label{sec:orgdb4bc66}
 
 \begin{itemize}
 \item Utilizamos la libreria numpy para tener acceso a operaciones vectorizadas sobre los arreglos
 \end{itemize}
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 import numpy as np
 
 x, dx = np.linspace(0, xmax, mesh+1, retstep=True)
 vpot = 0.5 * x**2  # Potencial de oscilador harmonico
 
-\end{verbatim}
+\end{lstlisting}
 \subsection{Punto de retorno clasico}
-\label{sec:org17422d4}
+\label{sec:org7b13b2c}
 
 Es el punto, \(x_{rc}\), que marca el limite entre las regiones clasicamente permitida y prohibida:
 
@@ -468,7 +465,7 @@ Es el punto, \(x_{rc}\), que marca el limite entre las regiones clasicamente per
 \end{itemize}
 \end{itemize}
 \subsubsection{ICL}
-\label{sec:orgf7c7f04}
+\label{sec:org45a925a}
 
 \begin{itemize}
 \item El indice \(icl\) es una aproximacion discreta al punto de retorno clasico \(x_{rc}\)
@@ -482,14 +479,14 @@ Es el punto, \(x_{rc}\), que marca el limite entre las regiones clasicamente per
 \end{itemize}
 \end{itemize}
 \subsubsection{Implementacion}
-\label{sec:org43058de}
+\label{sec:org2d5772e}
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 # Funcion auxiliar
 f_aux = 2*(V-E) * (dx**2/12)
 
-# Evadimos division entre cero
+# Aseguramos que haya cambio de signo evitando el cero
 f_aux = np.where(f == 0.0, 1e-20, f_aux)
 
 
@@ -497,16 +494,16 @@ f_aux = np.where(f == 0.0, 1e-20, f_aux)
 sign_changes = np.where(np.diff(np.sign(f_aux)))[0] # Devuelve los cambios de signo
 icl = sign_changes[-1] + 1 # Primer punto en la region prohibida
 
-\end{verbatim}
+\end{lstlisting}
 \subsubsection{Notas}
-\label{sec:orgc201c8f}
+\label{sec:org9bcdc05}
 
 \begin{itemize}
 \item La funcion auxiliar \(f^{aux}\) nos proporciona una relacion simple para determinar \(icl\). \textbf{La formula de Numerov usa:}
 
 \[ f = 1 - f^{aux} \]
 
-\item Dado que \(f\) se utiliza como denominador en el metodo de Numerov, debemos garantizar que ningun elemento sea exactamente cero. Utilizamos la funcion \(np.where(condition, x, y)\):
+\item En el raro caso en el que \(f^{aux}\) sea exactamente igual a cero, no se detecta correctamente el cambio de signo. Utilizamos la funcion \(np.where(condition, x, y)\) para asegurar que se puedan detectar los cambios de signo correctamente:
 
 \begin{itemize}
 \item Es una funcion vectorizada que actua como un \(if-else\) sobre arreglos de NumPy
@@ -518,22 +515,22 @@ icl = sign_changes[-1] + 1 # Primer punto en la region prohibida
 
 \item Cuando se usa sin los argumentos \((x,y)\), la funcion \(np.where(condition)\) devuelve una tupla de arreglos con los indices donde \(condition\) es \(True\). Para arreglos de \(1D\), el primer elemento de la tupla es el arreglo de estos indices, por ejemplo
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 zeros_index = np.where(f == 0.0)[0] # Arreglo que contiene los indices donde f = 0
 
-\end{verbatim}
+\end{lstlisting}
 
 \item El objetivo es encontrar el primer punto donde \(f^{aux}\) cambia de negativo a positivo, i.e. la transicion de la region permitida a la prohibida. Se implementa en tres pasos:
 
 \begin{itemize}
 \item Calculo de signos
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 signs = np.sign(f_aux)
 
-\end{verbatim}
+\end{lstlisting}
 
 Devuelve un arreglo con los signos de \(f^{aux}\)
 
@@ -541,39 +538,39 @@ Devuelve un arreglo con los signos de \(f^{aux}\)
 
 \item Luego:
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 diffs = np.diffs(signs)
 
-\end{verbatim}
+\end{lstlisting}
 
 Es un arreglo con las diferencias entre elementos adyacentes de \(signs\). Es cero cuando no hay cambio de signo entre \(f^{aux}_i\) y \(f^{aux}_{i+1}\), cuando cambia de negativo a positivo, \(diffs[i] = +2\)
 
 \item Finalmente, usamos el arreglo \(diffs\) como condiciones
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 sign_changes = np.where(diffs)[0]
 
-\end{verbatim}
+\end{lstlisting}
 
 cuando \(diffs[i]\) es positivo, es como pasar \(True\) y guarda el indice \(i\) en el primer arreglo de la tupla que devuelve \(np.where()\). Accedemos al arreglo con el primer elemento de la tupla.
 \end{itemize}
 
 \item Asi, el primer elemento de \(f^{aux}\) en la region prohibida es
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 icl = sign_changes[-1] + 1
 f_aux[icl]
 
-\end{verbatim}
+\end{lstlisting}
 \end{itemize}
 \subsection{Integracion}
-\label{sec:orgff92265}
+\label{sec:org4d4f12b}
 
 \subsubsection{Condiciones iniciales hacia afuera}
-\label{sec:orgb16996d}
+\label{sec:orgc142546}
 
 La paridad de la funcion de onda determina los puntos iniciales para la recursion hacia adentro, se tiene que:
 
@@ -603,7 +600,7 @@ donde \(f_{-1}\) y \(\psi_{-1}\) son el valor de \(f\) y \(\psi\) en \(x_{-1} = 
 \end{itemize}
 \end{itemize}
 \subsubsection{Nodos y validacion de energia}
-\label{sec:orgcd80863}
+\label{sec:org48cef7a}
 
 \begin{itemize}
 \item La solucion \(\psi^L\) contiene todos los nodos de \(\psi(x)\), ya que \(\psi^R\) decae exponencialmente sin oscilar.
@@ -616,7 +613,7 @@ donde \(f_{-1}\) y \(\psi_{-1}\) son el valor de \(f\) y \(\psi\) en \(x_{-1} = 
 
 \item Para este paso consideramos que \(\psi\) es la solucion en \([0,xmax]\), entonces el numero correcto de nodos se obtiene por simetria y considerando la paridad:
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 # Adjuste de nodos por simetria basado en paridad del estado energetico
 if nodes % 2 == 0:
@@ -626,18 +623,19 @@ else:
     # Impar
     ncross = 2 * ncross + 1
 
-# Update energy bounds if the node count is off.
+# Si los nodos no son correctos
+# Actualizar cotas de energia
 if ncross != nodes:
     if ncross > nodes:
         e_upper = e
     else:
         e_lower = e
-    continue  # Skip further steps if nodes do not match
+    continue  # Reiniciar ciclo de biseccion
 
-\end{verbatim}
+\end{lstlisting}
 \end{itemize}
 \subsubsection{Condiciones iniciales hacia adentro}
-\label{sec:orgfe3c040}
+\label{sec:orgdede203}
 
 Invertimos el orden de integracion, empezamos en la frontera hasta \(icl\). La formula de Numerov funciona igual que la integracion hacia afuera, entonces necesitamos los ultimos dos puntos \(\psi_{malla}\) y \(\psi_{malla-1}\):
 
@@ -653,7 +651,7 @@ Invertimos el orden de integracion, empezamos en la frontera hasta \(icl\). La f
 
 Usando estos valores podemos propagar el resto de \(\psi^R\) hasta el punto de retorno clasico.
 \subsubsection{Implementacion}
-\label{sec:orge9ccca9}
+\label{sec:orgc65af15}
 
 \begin{itemize}
 \item Integracion hacia afuera:
@@ -661,28 +659,28 @@ Usando estos valores podemos propagar el resto de \(\psi^R\) hasta el punto de r
 \begin{itemize}
 \item Durante la integracion hacia adentro, el valor de \(\psi_{icl}\) (calculado previamente en la integracion hacia afuera) se sobreescribe. En general estos valores son diferentes y crean una discontinuidad en la solucion. Guardamos \(\psi^L_{icl}\) en una variable auxiliar \(psi\_icl\) antes de iniciar la integracion hacia adentro
 
-\begin{verbatim}
-  psi = np.zeros_like(x)
-  # Iniciacion de psi basado en paridad
-  if nodes % 2:
-      # Impar
-      psi[0] = 0.0
-      psi[1] = dx
-  else:
-      # Par
-      psi[0] = 1.0
-      psi[1] = (6.0 - 5.0 * f[0]) * psi[0] / f[1]
+\begin{lstlisting}[language=Python,numbers=none]
+psi = np.zeros_like(x)
+# Iniciacion de psi basado en paridad
+if nodes % 2:
+    # Impar
+    psi[0] = 0.0
+    psi[1] = dx
+else:
+    # Par
+    psi[0] = 1.0
+    psi[1] = (6.0 - 5.0 * f[0]) * psi[0] / f[1]
 
-  psi_icl, ncross = outward_integration(psi, f, icl)
+psi_icl, ncross = outward_integration(psi, f, icl)
 
-  def outward_integration(psi, f, icl):
-      ncross = 0
-      for i in range(1, icl):
-          psi[i+1] = ((12.0 - 10.0)*f[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
-          ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
-      return psi[icl], ncross
+def outward_integration(psi, f, icl):
+    ncross = 0
+    for i in range(1, icl):
+        psi[i+1] = ((12.0 - 10.0)*f[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
+        ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
+    return psi[icl], ncross
 
-\end{verbatim}
+\end{lstlisting}
 \end{itemize}
 
 \item Integracion hacia adentro:
@@ -690,7 +688,7 @@ Usando estos valores podemos propagar el resto de \(\psi^R\) hasta el punto de r
 \begin{itemize}
 \item La solución general cerca de \(xmax\) es una superposicion de exponenciales crecientes/decrecientes. El rescale suprime artificialmente la parte divergente, i.e. no física, preservando el decaimiento exponencial válido en la region clasicamente prohibida
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 # Inward integration on the tail: initialize boundary conditions.
 psi[-1] = dx
@@ -705,14 +703,14 @@ def inward_integration(psi, f, icl, mesh):
         if abs(psi[i-1]) > 1e10:
             psi[i-1:-2] /= psi[i-1] # Rescale para suprimir comportamiento divergente
 
-\end{verbatim}
+\end{lstlisting}
 \end{itemize}
 \end{itemize}
 \subsection{Acoplamiento y normalizacion}
-\label{sec:org2fa34bd}
+\label{sec:orgebecf68}
 
 \subsubsection{Implementacion}
-\label{sec:org24e7fc9}
+\label{sec:orgb8de890}
 
 \begin{itemize}
 \item Es una simple funcion que empalma \(\psi^R\) con \(\psi^L\) en \(x_c = icl*\Delta x\) escalando \(\psi^R\) por el factor
@@ -727,7 +725,7 @@ def inward_integration(psi, f, icl, mesh):
 \end{itemize}
 \end{itemize}
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 # Normalizar funcion de onda
 scale_normalize_ho(psi, psi_icl, icl, x)
@@ -740,12 +738,12 @@ def scale_normalize_ho(psi, psi_icl, icl, x):
     norm = np.sqrt(np.trapezoid(2*psi**2, x))  # Symmetric normalization
     psi /= norm
 
-\end{verbatim}
+\end{lstlisting}
 \subsection{Criterio de convergencia}
-\label{sec:org3d7ba66}
+\label{sec:org2c822a5}
 
 \subsubsection{Determinacion de discontinuidad en la primer derivada}
-\label{sec:org9c05542}
+\label{sec:org2ba55d9}
 
 Al haber normalizado la funcion de onda, nuestra solucion, en general tendra una discontinuidad en su primera derivada, que podemos expresar como
 
@@ -770,7 +768,7 @@ en terminos de \(f\), obtenemos la expresion para la discontinuidad en la primer
 
 \[ {\psi'}_i^R - {\psi'}_i^L = \frac{\psi_{i-1}^L + \psi_{i+1}^R - [14-12f_i]\psi_i}{\Delta x} + \order{(\Delta x)^2} \]
 \subsubsection{Logica de biseccion}
-\label{sec:org53bf1f3}
+\label{sec:org986608a}
 
 La discontinuidad en la derivada
 
@@ -818,9 +816,9 @@ donde \(tol\) es una tolerancia arbitraria. La energia final es
 \[ E_n \approx 0.5 * (e\_upper + e\_lower) \]
 \end{itemize}
 \subsubsection{Implementacion}
-\label{sec:orga8c1947}
+\label{sec:org92fc76f}
 
-\begin{verbatim}
+\begin{lstlisting}[language=Python,numbers=none]
 
 # Compute the derivative discontinuity at the matching point
 ddelta = (psi[icl+1] + psi[icl-1] - (14.0 - 12.0 * f[icl]) * psi[icl]) / dx
@@ -834,21 +832,150 @@ if ddelta * psi[icl] > 0.0:
 else:
     e_lower = e
 
-\end{verbatim}
+\end{lstlisting}
 \section{Algoritmo de biseccion para el atomo de hidrogeno}
-\label{sec:orgb898030}
+\label{sec:org4a1872f}
 
+Para resolver la ecuacion radial modificamos ligeramente el algoritmo
 
+\begin{itemize}
+\item Al hacer la transformacion a coordenadas logaritmicas, ajustamos la malla
 
+\begin{itemize}
+\item \(x = \ln(Z*r)\), donde \(r\) es la coordenada radial fisica
+\end{itemize}
+
+\item El potencial efectivo es
+
+\begin{lstlisting}[language=Python,numbers=none]
+v_eff = -2*Z/r + l*(l + 1)/r**2
+\end{lstlisting}
+
+\item Iniciacion de la funcion de onda tomando en cuenta su comportamiento asintotico
+
+\begin{lstlisting}[language=Python,numbers=none]
+
+psi[0] = (r[0] ** (l + 1)) * (1 - (2 * Z * r[0])/(2 * l + 2)) / np.sqrt(r[0])
+psi[1] = (r[1] ** (l + 1)) * (1 - (2 * Z * r[1])/(2 * l + 2)) / np.sqrt(r[1])
+
+psi_icl, ncross = outward_integration(psi, f, f_10, icl)
+
+\end{lstlisting}
+
+\item Usando \(\psi_0\) y \(\psi_1\) propagamos la solucion con el paso constante de la malla logaritmica \(\dd{x}\) usando la formula de Numerov
+
+\item Antes de hacer la integracion hacia adentro, consideramos que la solucion debe tener \(n - l - 1\) nodos
+
+\begin{lstlisting}[language=Python,numbers=none]
+
+# Checar que las cotas contienen el numero correcto de nodos
+nodes_expected = n - l - 1
+if ncross != nodes_expected:
+    if ncross > nodes_expected:
+        e_upper = e
+    else:
+        e_lower = e
+    e = 0.5 * (e_lower + e_upper)
+    continue  # Saltarse la integracion hacia adentro si la cantidad de nodos es incorrecta
+
+\end{lstlisting}
+
+\item Para la integracion hacia adentro, iniciamos los ultimos dos valores de la misma manera
+
+\begin{lstlisting}[language=Python,numbers=none]
+
+psi[-1] = dx
+psi[-2] = f_10[-1] * psi[-1] / f[-2]
+inward_integration(psi, f, icl, mesh, f_10)
+
+\end{lstlisting}
+
+\item La normalizacion se hace en coordenadas esfericas
+
+\begin{lstlisting}[language=Python,numbers=none]
+
+norm = np.sqrt(np.trapezoid(psi**2 * r**2, x))  
+psi /= np.sqrt(norm)
+
+\end{lstlisting}
+\end{itemize}
 \section{Teoria de perturbaciones}
-\label{sec:org81335a7}
+\label{sec:org52ec7a4}
 
+Para mejorar la convergencia, podemos utilizar teoria de perturbaciones para obtener correcciones de energia, asi cambiamos el criterio de convergencia para cuando la correccion en la energia se mas pequena que la tolerancia, usamos la funcion:
+
+\begin{lstlisting}[language=Python,numbers=none]
+def update_energy(icl, f, psi, dx, ddx12, e, e_lower, e_upper):
+    # ddx12 es una constante auxiliar -> dx**2 / 12.0
+    # f -> 1 + ddx12 * (lnhfsq + r2 * (e - vpot)) dada por Numerov
+    # icl es el primer indice en la region prohibida
+    i = icl
+    psi_cusp = (psi[i-1] * f[i-1] + psi[i+1] * f[i+1] + 10 * f[i] * psi[i]) / 12.0
+    dfcusp = f[i] * (psi[i] / psi_cusp - 1.0)
+    de = dfcusp / ddx12 * (psi_cusp ** 2) * dx
+
+    if de > 0:
+        e_lower = e
+    elif de < 0:
+        e_upper = e
+    e += de
+    e = max(min(e, e_upper), e_lower)
+    return e, e_lower, e_upper, de # Devuelve la energia correjida y nuevas cotas
+\end{lstlisting}
+
+\begin{itemize}
+\item Usando la formula de Numerov, calculamos \(\psi_{icl}\) tomando \(icl-1\) o \(icl+1\) como punto central, luego tenemos la cantidad \(psicusp\) que es el valor calculado usando \(icl\) como punto central. En general \(psicusp \neq \psi_{icl}\)
+
+\item Usando teoria de perturbaciones, consideramos a la funcion donde \(psicusp \neq \psi_{icl}\) como la solucion exacta a un problema diferente; uno en el que se superimpone una funcion delta \(v_0\delta(x-x_c)\) en \(x_c \equiv x_{icl}\) (porque estamos en la malla logaritmica) al potencial. La presencia de una delta causa una discontinuidad en la primera derivada y el tamano de la discontinuidad esta relacionada al coeficiente de la delta. Al conocer este coeficiente, podemos dar una estimacion, basada en teoria de perturbaciones, de la diferencia entre el eigenvalor actual (para este potencial diferente) y el eigenvalor para el potencial que nos interesa
+
+\item Para lidiar con la delta en una integracion numerica, asumimos que solo tiene un valor en el intervalo \(\Delta x\) centrado en \(\psi_{icl}\).
+
+\item La formula de Numerov que usamos es
+
+\[ \psi_{i+1}f_{i+1} = (12-10f_i)\psi_i - f_{i-1}\psi_{i-1} \]   
+
+donde normalmente extraemos \(\psi_{i+1}\) dividiento entre \(f_{i+1}\), pero ahora suponemos que \(f_{icl}\) tiene un valor diferente que no conocemosd \(fcusp\), de modo que nuestra funcion satisface la formula de Numerov tambien en un punto \(icl\). Entonces se debe cumplir lo siguiente:
+
+\[ fcusp * psicusp = f_{icl}*\psi_{icl} \]
+
+ya que este producto esta dado por el metodo de Numerov integrando desde \(icl-1\) hasta \(icl+1\) y \(psicusp\) es el valor que la funcion \(\psi\) debe tener para que satisfaga la formula de Numerov tambien en \(icl\). Como consecuencia, el valor de \(dfcusp\) es solamente \(fcusp-f_{icl}\), o bien \(\delta f\)
+
+\item El siguente paso es calcular la variacion \(\delta V\) del potencial \(V(r)\) correspondiente a \(\delta f\). De la ecuaciond de Numerov \(\psi''(x) = g(x)\psi(x)\), para la ecuacion radial tenemos
+
+\[ g(x) = \frac{2m}{\hbar^2}r^2(x) (E-V(r(x))) - (l+\frac{1}{2})^2 \]
+
+diferenciando se obtiene
+
+\[ \delta g(x) = - (2m/\hbar^2)r^2 \delta V \]
+
+dado que \(f(x) = 1+g(x) (\Delta x^2/12)\), tenemos \(\delta g = (12/\Delta x^2) \delta f\), por lo que
+
+\[ \delta V = - \frac{\hbar^2}{2m}\frac{1}{r^2} \frac{12}{\Delta x^2}\delta f \]
+
+\item Teoria de perturbaciones a primer orden da la variacion del eigenvalor correspondiente
+
+\[ \delta e = \ev{\delta V}{\phi} = \int |\psi(x)|^2r(x)^2 \delta V \dd{x} \]
+
+donde \(\phi\) es la solucion radial completa y \(\psi\) es la funcion auxiliar que estamos trabajando
+
+\item Escribimos la integral como una suma finita sobre puntos de la malla, con una sola contribucion diferente de cero proveniente de la region \(\Delta x\) centrada en el punto \(x_c = x_{icl}\). Finalmente la correccion de energia:
+
+\[ \delta e = |\psi(x_c)|^2r(x_c)^2 \delta V \Delta x = - \frac{\hbar^2}{2m}\frac{12}{\Delta x^2}|\psi(x_c)|^2 \Delta x \delta f \]
+
+esta es la expresion que utilizamos para calcular diferencia entre el eigenvalor para el potencial con la delta superimpuesta y el potencial correcto. Ya que en el primer paso, esta aproximacion puede tener errores muy grandes, usamos
+
+\begin{lstlisting}[language=Python,numbers=none]
+e = max(min(e, e_upper), e_lower)
+\end{lstlisting}
+
+para que la nueva energia no se salga de las cotas de energia.
+\end{itemize}
 \section{Central Potentials}
-\label{sec:org575117b}
+\label{sec:orgaa39a7c}
 
 \[ H = \qty[ - \frac{\hbar^2}{2m}\nabla^2 + V(r)] \]
 \subsection{Radial equaiton}
-\label{sec:org0769d34}
+\label{sec:orgfdf4f36}
 
 asdd
 
@@ -878,12 +1005,8 @@ Esto significa que la funcion \(|\chi(r)|^2\) se puede interpretar directamente 
 esta es la forma de la ecuacion de Schrodinger unidimensional para una particula bajo un potencial efectivo
 
 \[ \hat{V}(r) = V(r) + \frac{\hbar^2 l(l+1)}{2mr^2} \]
-\subsection{Potencial de Coulomb}
-\label{sec:org28a8187}
-
-
 \subsection{Malla Logaritmica}
-\label{sec:orgacaea8d}
+\label{sec:orgda17906}
 
 \[ x = x(r) \]
 
