@@ -59,7 +59,7 @@ def solve_atom(n=1, l=0, Z=1, rmax=500.0, mesh=1421, max_iter=100, tol=1e-10):
         # Compute the Numerov f-array and the classical turning point
         f, f_10, icl = compute_f_and_icl_atom(mesh, ddx12, r2, lnhfsq, v0, e)
 
-        if icl < 0 or icl >= mesh - 2:
+        if icl < 0 or icl >= mesh-2:
             raise ValueError(f"solve_atom: icl = {icl} out of range (mesh = {mesh}).")
 
         # Set initial conditions for the wavefunction on the mesh.
@@ -378,7 +378,7 @@ def harmonic_oscillator(nodes=0, xmax=10.0, mesh=500, max_iter=1000, tol=1e-10):
         else:
             e_lower = e
 
-    return e, iterations
+    return e, iterations, psi
 
 ################################################################################
 ################################ Helpers2 #######################################

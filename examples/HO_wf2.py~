@@ -1,0 +1,57 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+import os
+
+# Add src directory to path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from numerov import harmonic_oscillator
+
+def harmonic_oscillator_wf(state):
+    mesh = 500
+    xmax = 10.0
+
+    e, iterations, psi = harmonic_oscillator(nodes=state, mesh=mesh, xmax=xmax)
+
+    # Init full wf
+    x_full = np.linspace(-xmax, xmax, 2*mesh + 1)
+    psi_full = np.zeros(2*mesh + 1)
+
+    # Fill the positive half (x >= 0)
+    psi_full[mesh:] = psi
+
+    # Fill the negative half (x < 0) using symmetry
+    if state % 2 == 0:
+        # Even state: ψ(-x) = ψ(x)
+        psi_full[:mesh] = np.flip(psi[1:])
+    else:
+        # Odd state: ψ(-x) = -ψ(x)
+        psi_full[:mesh] = -np.flip(psi[1:])
+
+    return x_full, psi_full, e
+
+
+# Define the states to plot (n=0,1,2,3)
+states_to_plot = [0, 1, 2, 3]
+
+plt.figure(figsize=(10, 6))
+
+for n in states_to_plot:
+    # Generate wavefunction for state `n`
+    x, psi, energy = harmonic_oscillator_wf(state=n)
+    
+    # Plot with a label (showing n and energy)
+    plt.plot(x, psi, label=f"n = {n}, E = {energy:.3f}")
+
+# Add styling
+plt.title("Harmonic Oscillator Wavefunctions", fontsize=14)
+plt.xlabel("Position (x)", fontsize=12)
+plt.ylabel("ψ(x)", fontsize=12)
+plt.axhline(0, color='black', linestyle='--', linewidth=0.5)
+plt.axvline(0, color='black', linestyle='--', linewidth=0.5)
+plt.grid(alpha=0.3)
+plt.legend(fontsize=10)
+plt.tight_layout()
+plt.show()
+

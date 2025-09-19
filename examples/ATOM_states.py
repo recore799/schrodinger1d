@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'
 from numerov import solve_atom, solve_atom_bisection
 
 states = 6
-l = 0
+l = 1
 
 print(f"Testing hydrogen_atom for {states} states with l={l}")
 print("-" * 80)
@@ -16,7 +16,7 @@ print(f"{'n':>3} {'Energy (Ry)':>15} {'Theoretical':>15} {'Error':>15} {'Iterati
 print("-" * 80)
 
 for n in range(0,states):
-    state = n + 1
+    state = n + 2
     theoretical_energy = -1 / state**2
 
     # Time the function execution

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Explorando sistemas cuánticos con Python</title>
+  <meta name="description" content="Numerov (OA y H) y Hartree–Fock (H2, HeH+): recursos didácticos y resultados." />
+  <link rel="icon" href="assets/figs/favicon.png" />
+
+  <!-- Tailwind (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // paleta rápida
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#3B82F6' }, /* azul elegante */
+            ink: { DEFAULT: '#0f172a' },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Alpine.js (interacciones simples: tabs, toggles) -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- KaTeX (fórmulas) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});">
+  </script>
+
+  <!-- Prism (código) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+
+  <!-- GLightbox (galería/zoom imágenes) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      GLightbox({ selector: '.glightbox' });
+    });
+  </script>
+
+  <style>
+    /* detalles sutiles */
+    .glass { backdrop-filter: blur(8px); background: rgba(255,255,255,.7); }
+    @media (prefers-color-scheme: dark) {
+      .glass { background: rgba(15,23,42,.6); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+  <!-- NAV -->
+  <header class="sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-950/70 glass">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <a href="#" class="font-semibold tracking-tight">Quantum·Edu</a>
+      <nav class="hidden md:flex gap-6 text-sm">
+        <a href="#numerov" class="hover:text-primary">Numerov</a>
+        <a href="#hf" class="hover:text-primary">Hartree–Fock</a>
+        <a href="#resultados" class="hover:text-primary">Resultados</a>
+        <a href="#recursos" class="hover:text-primary">Recursos</a>
+      </nav>
+      <a href="https://github.com/TU_USUARIO/TU_REPO" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">GitHub</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="mx-auto max-w-6xl px-4 pt-16 pb-20 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight">
+          Explorando sistemas cuánticos con <span class="text-primary">Python</span>
+        </h1>
+        <p class="mt-4 text-slate-600 dark:text-slate-300">
+          Implementaciones docentes de <strong>Numerov</strong> (oscilador armónico y átomo de hidrógeno) y <strong>Hartree–Fock</strong> (H₂, HeH⁺). Diseñado para cursos saturados, con enfoque en niveles altos de Bloom.
+        </p>
+        <div class="mt-6 flex gap-3">
+          <a href="#resultados" class="px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">Ver resultados</a>
+          <a href="#recursos" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">Material para clase</a>
+        </div>
+      </div>
+      <div class="relative">
+        <img src="assets/figs/oscillator_states.png" alt="Oscilador armónico" class="rounded-2xl shadow-xl">
+        <div class="absolute -bottom-4 -right-4 bg-white/80 dark:bg-slate-900/80 glass rounded-xl p-3 shadow-lg">
+          <p class="text-xs">Gráficas generadas con tu implementación de Numerov</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOQUE NUMEROV -->
+  <section id="numerov" class="py-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="text-2xl md:text-3xl font-semibold">Numerov: OA y átomo de hidrógeno</h2>
+      <p class="mt-3 text-slate-600 dark:text-slate-300">
+        Integramos la ecuación de Schrödinger 1D con Numerov. Ejemplos: $V(x)=\\tfrac12 x^2$ y potencial radial de H.
+      </p>
+
+      <div class="mt-8 grid md:grid-cols-2 gap-6">
+        <a href="assets/figs/oscillator_states.png" class="glightbox group">
+          <img src="assets/figs/oscillator_states.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="Estados OA" />
+          <div class="mt-2 text-sm text-slate-500">Estados del oscilador (ψ_n desplazadas por E_n)</div>
+        </a>
+        <a href="assets/figs/hydrogen_radials.png" class="glightbox group">
+          <img src="assets/figs/hydrogen_radials.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="Radiales H" />
+          <div class="mt-2 text-sm text-slate-500">Funciones radiales del hidrógeno</div>
+        </a>
+      </div>
+
+      <!-- Tabs de código -->
+      <div x-data="{tab:'py'}" class="mt-10">
+        <div class="flex gap-2 mb-3">
+          <button @click="tab='py'" :class="tab==='py'?'bg-primary text-white':'border'"
+                  class="px-3 py-1.5 rounded-lg text-sm border border-slate-300/60 dark:border-slate-700">Python</button>
+          <button @click="tab='math'" :class="tab==='math'?'bg-primary text-white':'border'"
+                  class="px-3 py-1.5 rounded-lg text-sm border border-slate-300/60 dark:border-slate-700">Ecuación</button>
+        </div>
+        <div x-show="tab==='py'">
+<pre><code class="language-python"># Llamada simple (ejemplo)
+x, psi, E = harmonic_oscillator_wf(state=2, mesh=600, xmax=8.0)
+</code></pre>
+        </div>
+        <div x-show="tab==='math'">
+          <p>Resolvemos $\dfrac{d^2\psi}{dx^2} = f(x)\,\psi(x)$ con el esquema de Numerov (orden 6).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOQUE HF -->
+  <section id="hf" class="py-14 bg-white/70 dark:bg-slate-900/40">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="text-2xl md:text-3xl font-semibold">Hartree–Fock: H₂ y HeH⁺</h2>
+      <p class="mt-3 text-slate-600 dark:text-slate-300">
+        SCF convergente a energías correctas y orbitales $\sigma_g, \sigma_u$. Opcional: corrección MP2 para ilustrar correlación.
+      </p>
+
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <a href="assets/figs/h2_PEC_HF.png" class="glightbox group md:col-span-2">
+          <img src="assets/figs/h2_PEC_HF.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="PEC H2 HF" />
+          <div class="mt-2 text-sm text-slate-500">Curva de energía potencial (HF) para H₂</div>
+        </a>
+        <a href="assets/figs/hehp_MO_sigma.png" class="glightbox group">
+          <img src="assets/figs/hehp_MO_sigma.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="MO HeH+" />
+          <div class="mt-2 text-sm text-slate-500">Densidad orbital $\sigma$ en HeH⁺</div>
+        </a>
+      </div>
+
+      <div class="mt-10 grid md:grid-cols-2 gap-6">
+        <div class="rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60">
+          <h3 class="font-semibold">Idea didáctica</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Comparar $E_{HF}(R)$ vs. $E_{HF+MP2}(R)$ para discutir <em>correlación electrónica</em> (Bloom: analizar/evaluar).
+          </p>
+        </div>
+        <div class="rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60">
+          <h3 class="font-semibold">Animación</h3>
+          <video controls class="rounded-xl shadow-md">
+            <source src="assets/anim/osc_superposicion.mp4" type="video/mp4">
+          </video>
+          <p class="mt-2 text-xs text-slate-500">Superposición de estados en “caja” (demo Numerov)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section id="resultados" class="py-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="text-2xl md:text-3xl font-semibold">Resultados destacados</h2>
+      <ul class="mt-4 grid md:grid-cols-3 gap-6 text-sm">
+        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">Energías del OA con error relativo &lt; 1e-4</li>
+        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">PEC de H₂ con mínimo cercano a 0.74 Å (HF)</li>
+        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">MO $\sigma_g$ / $\sigma_u$ coherentes</li>
+      </ul>
+      <div class="mt-8">
+        <a href="assets/figs/notas.pdf" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">
+          Descargar notas (PDF)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECURSOS / QR -->
+  <section id="recursos" class="py-14 bg-white/70 dark:bg-slate-900/40">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="text-2xl md:text-3xl font-semibold">Recursos</h2>
+      <div class="mt-6 grid md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-slate-600 dark:text-slate-300">
+            Repositorio con código, datos y scripts para reproducibilidad.
+          </p>
+          <div class="mt-4 flex gap-3">
+            <a href="https://github.com/TU_USUARIO/TU_REPO" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">Ver en GitHub</a>
+            <a href="https://TU_USUARIO.github.io/TU_REPO/" class="px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">Ir al sitio</a>
+          </div>
+        </div>
+        <div class="rounded-2xl p-6 border border-dashed border-slate-300/60 dark:border-slate-700">
+          <p class="text-sm text-slate-500">Pon aquí una imagen del QR que apunte a este sitio</p>
+          <img src="assets/figs/qr_site.png" alt="QR al sitio" class="mt-3 w-40 h-40 object-contain">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-10 text-center text-sm text-slate-500">
+    © 2025 Universidad de Sonora — Contacto: tuemail@unison.mx
+  </footer>
+</body>
+</html>
