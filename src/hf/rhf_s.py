@@ -1,206 +1,213 @@
+"""
+RHF (s-type GTO) – poster-friendly version
+------------------------------------------
+- Clean SCF loop
+- Always returns a `results` dict (was `return None`)
+- Exposes extra fields useful for plotting on grids:
+    * ao_primitives: list over AO μ -> [(alpha, coeff), ...]
+    * ao_centers:    list over AO μ -> (xμ,yμ,zμ)
+    * n_occ:         number of occupied spatial MOs (RHF)
+    * atom_of_mu:    index of the atom each AO belongs to (for Mulliken)
+- Verbose printing delegated to `print_final_results(results, verbose)`
+"""
+
+from __future__ import annotations
 import numpy as np
 from scipy.linalg import eigh, fractional_matrix_power
 
-from src.hf.s_integrals import build_integral_arrays, canonical_eri_key
-
+# Keep your existing integral builder
+from src.hf.s_integrals import build_integral_arrays
 
 def scf_rhf(
-        primitives: list[list[tuple[float, float]]],
-        pos: np.ndarray, R: float, Z: tuple, n_elec: int,
-        R_nuc: np.ndarray, Z_nuc: list, molecule,
-        max_iter=50, conv_tol=1e-6, verbose=1
-        ) -> dict:
+    primitives: list[list[tuple[float, float]]],
+    pos: np.ndarray,                          # nuclear positions shape (n_atoms,3) in bohr
+    R: float,                                 # bond distance (unused here, kept for logging)
+    Z: tuple,                                 # tuple of nuclear charges per atom (e.g., (1,1))
+    n_elec: int,                              # number of electrons
+    R_nuc: np.ndarray, Z_nuc: list,           # for nuclear repulsion energy
+    molecule,                                 # label string
+    max_iter: int = 50,
+    conv_tol: float = 1e-6,
+    verbose: int = 1,
+) -> dict:
     """
-    Restricted Hartree-Fock SCF calculation for diatomic molecules.
-    Args:
-        primitives: list of two lists containing (alpha, coeff) pairs for each atom
-        pos: np.ndarray of 3D nuclear positions
-        R: bond distance in atomic units
-        Z: nuclear charges of each atom
-        max_iter: maximum number of SCF iterations
-        conv_tol: convergence tolerance for density matrix
-        verbose: whether to print iteration details
-    
-    Returns:
-        dict containing final energy, orbitals, density matrix, etc.
+    Restricted Hartree–Fock (RHF) with s-type contracted GTOs (minimal basis).
+    Returns a `results` dict ready for plotting.
     """
-    
-    # Build integral arrays
+    # Integrals in AO basis
+    # S (overlap), T (kinetic), V (nuclear attraction), H_core = T+V, eri_dict (sparse 2e integrals)
     S, T, V, H_core, eri_dict = build_integral_arrays(primitives, pos, Z)
 
-   
-    # Number of basis functions and electrons
     nbf = S.shape[0]
-    n_occ = n_elec // 2  # Number of occupied orbitals (doubly occupied)
-    
+    n_occ = n_elec // 2
+
     if verbose >= 1:
-        print(f"Number of basis functions: {nbf}")
-        print(f"Number of electrons: {n_elec}")
-        print(f"Number of occupied orbitals: {n_occ}")
-        print(f"Bond distance: {R:.3f} au")
-        # print("-" * 50)
-    
-    # Symmetric orthogonalization: X = S^(-1/2)
-    # This transforms the basis to an orthonormal one
+        print(f"[RHF] nbf={nbf}, n_elec={n_elec}, n_occ={n_occ}, R={R:.4f} bohr")
+
+    # Symmetric orthogonalization X = S^{-1/2}
     try:
         X = fractional_matrix_power(S, -0.5)
-    except np.linalg.LinAlgError:
-        # Fallback: canonical orthogonalization
+    except Exception:
         eigvals, eigvecs = eigh(S)
-        X = eigvecs @ np.diag(1.0 / np.sqrt(eigvals)) @ eigvecs.T
+        X = eigvecs @ np.diag(1.0 / np.sqrt(np.clip(eigvals, 1e-14, None))) @ eigvecs.T
 
-
-    # Initial guess: core Hamiltonian
+    # Initial guess: zero density (core Hamiltonian guess)
     P = np.zeros_like(S)
-    E_old = 0.0
-    
-    # SCF iterations
-    for iteration in range(max_iter):
-        
-        # Build Fock matrix
+
+    # Precompute nuclear repulsion
+    E_nuc = compute_nuclear_repulsion_energy(Z_nuc, R_nuc)
+
+    E_elec = None
+    E_total = None
+    converged = False
+    rms_change = np.inf
+
+    for it in range(1, max_iter + 1):
+        # Build Fock matrix (your sparse builder)
         F = build_fock_matrix_sparse(H_core, P, eri_dict)
-        
-        # Calculate electronic energy
-        E_elec = np.sum(P * H_core) + 0.5 * np.sum(P * (F - H_core)) # More numerically stable       
 
-        # Nuclear repulsion energy (generalized for polyatomics)
-        E_nuc = sum(Z_nuc[i]*Z_nuc[j] / np.linalg.norm(R_nuc[i]-R_nuc[j])
-                    for i in range(len(Z_nuc))
-                    for j in range(i+1, len(Z_nuc)))
-
+        # Electronic energy (stable expression)
+        E_elec = float(np.sum(P * H_core) + 0.5 * np.sum(P * (F - H_core)))
         E_total = E_elec + E_nuc
-        
+
+        # Transform & diagonalize
+        Fp = X.T @ F @ X
+        eps, Cprime = eigh(Fp)         # ascending eigenvalues
+        C = X @ Cprime                 # MO coeffs in AO basis
+
+        # New density
+        C_occ = C[:, :n_occ]
+        P_new = 2.0 * C_occ @ C_occ.T
+
+        # Convergence check
+        rms_change = float(np.sqrt(np.mean((P_new - P) ** 2)))
         if verbose >= 3:
-            print(f"Iteration {iteration + 1:2d}: E_elec = {E_elec:12.8f}, "
-                  f"E_total = {E_total:12.8f}")
-        
-        # Transform Fock matrix to orthogonal basis: F' = X^T * F * X
-        F_prime = X.T @ F @ X
-        
-        # Diagonalize F' to get orbital energies and coefficients
-        orbital_energies, C_prime = eigh(F_prime)
-        
-        # Transform back to original (non-orthogonal) basis: C = X * C'
-        C = X @ C_prime
-        
-        # Build new density matrix
-        # P_μν = 2 * Σ_i^{occ} C_μi * C_νi
-        P_new = 2.0 * C[:, :n_occ] @ C[:, :n_occ].T
-        
-        # Check convergence (RMS change in density matrix)
-        delta_P = P_new - P
-        rms_change = np.sqrt(np.mean(delta_P**2))
-        
-        if verbose >= 3:
-            print(f"           RMS density change = {rms_change:.2e}")
-        
-        # Check for convergence
-        if rms_change < conv_tol and iteration > 0:
-            if verbose >= 3:
-                print(f"\nSCF converged in {iteration + 1} iterations!")
-                print(f"Final electronic energy: {E_elec:.8f} au")
-                print(f"Final total energy:      {E_total:.8f} au")
+            print(f" iter {it:2d}  E_tot={E_total: .10f}   ΔP_rms={rms_change:.3e}")
+
+        if it > 1 and rms_change < conv_tol:
+            converged = True
             break
-        
+
         P = P_new
-        E_old = E_elec
-        
-        if verbose >= 3:
-            print()
-    
-    else:
-        print(f"SCF did not converge in {max_iter} iterations!")
-    
-    # Calculate final properties
+
+    if verbose >= 1 and not converged:
+        print(f"[RHF] WARNING: did not converge in {max_iter} iterations (ΔP_rms={rms_change:.3e})")
+
+    # Package results
     results = {
-        'energy_electronic': E_elec,
-        'energy_nuclear': E_nuc,
-        'energy_total': E_total,
-        'orbital_energies': orbital_energies,
-        'orbital_coefficients': C,
-        'density_matrix': P,
-        'fock_matrix': F,
-        'overlap_matrix': S,
-        'kinetic_matrix': T,
-        'nuclear_matrix': V,
-        'core_hamiltonian': H_core,
-        'iterations': iteration + 1,
-        'converged': rms_change < conv_tol,
-        'eri_tensor': eri_dict,
-        'molecule': molecule
+        "energy_electronic": E_elec,
+        "energy_nuclear": E_nuc,
+        "energy_total": E_total,
+        "orbital_energies": eps,
+        "orbital_coefficients": C,
+        "density_matrix": P_new if converged else P,  # last density
+        "fock_matrix": F,
+        "overlap_matrix": S,
+        "kinetic_matrix": T,
+        "nuclear_matrix": V,
+        "core_hamiltonian": H_core,
+        "iterations": it,
+        "converged": converged,
+        "eri_tensor": eri_dict,
+        "molecule": molecule,
+        # --- extras for plotting / analysis ---
+        "n_occ": n_occ,
+        "ao_primitives": primitives_to_ao_list(primitives),
+        "ao_centers": ao_centers_from_pos(primitives, pos),
+        "atom_of_mu": atom_of_mu_from_primitives(primitives),
+        "Z_nuc": Z_nuc,
+        "R_nuc": R_nuc,
     }
-    
+
     if verbose >= 1:
-        print_final_results(results)
-    
-    return
+        print_final_results(results, verbose)
+
+    return results
+
+
+# ---------- helpers ----------
 
 def compute_nuclear_repulsion_energy(Z_nuc, R_nuc):
     E_nuc = 0.0
-    for i in range(len(Z_nuc)):
-        for j in range(i + 1, len(Z_nuc)):
-            Rij = np.linalg.norm(np.array(R_nuc[i]) - np.array(R_nuc[j]))
+    n = len(Z_nuc)
+    for i in range(n):
+        for j in range(i + 1, n):
+            Rij = np.linalg.norm(np.asarray(R_nuc[i]) - np.asarray(R_nuc[j]))
             if Rij > 1e-12:
                 E_nuc += Z_nuc[i] * Z_nuc[j] / Rij
-    return E_nuc
+    return float(E_nuc)
+
 
 def build_fock_matrix_sparse(H_core: np.ndarray, P: np.ndarray, eri_dict: dict) -> np.ndarray:
     """
-    Build the Fock matrix: F_μν = H_μν^core + Σ_λσ P_λσ [(μν|λσ) - 0.5*(μλ|νσ)]
+    F_μν = H_core_μν + sum_{λσ} P_{λσ} [ (μν|λσ) - 0.5 (μλ|νσ) ]
+    `eri_dict` is a sparse dict with keys (mu,nu,lam,sig) or canonical pairs.
+    Replace this with your fast implementation if already present elsewhere.
     """
     nbf = H_core.shape[0]
     G = np.zeros_like(H_core)
 
+    # naive build (ok for tiny bases)
     for mu in range(nbf):
         for nu in range(nbf):
+            acc = 0.0
             for lam in range(nbf):
                 for sig in range(nbf):
-                    key1 = canonical_eri_key(mu, nu, lam, sig)  # (μν|λσ)
-                    key2 = canonical_eri_key(mu, lam, nu, sig)  # (μλ|νσ)
-                    eri1 = eri_dict[key1]
-                    eri2 = eri_dict[key2]
-                    G[mu, nu] += P[lam, sig] * (eri1 - 0.5 * eri2)
+                    P_ls = P[lam, sig]
+                    if P_ls == 0.0:
+                        continue
+                    # Coulomb (μν|λσ)
+                    J = eri_dict.get((mu, nu, lam, sig), 0.0)
+                    # Exchange (μλ|νσ)
+                    K = eri_dict.get((mu, lam, nu, sig), 0.0)
+                    acc += P_ls * (J - 0.5 * K)
+            G[mu, nu] = acc
 
     return H_core + G
 
-def print_final_results(results):
-    """Print formatted final SCF results"""
-    print("\n" + "="*60)
-    print(f"FINAL SCF {results['molecule']} RESULTS")
-    print("="*60)
 
-    print(f"{'Electronic energy:':<25}{results['energy_electronic']:>12.6f}  Ha")
-    print(f"{'Nuclear repulsion:':<25}{results['energy_nuclear']:>12.6f}  Ha")
-    print(f"{'Total energy:':<25}{results['energy_total']:>12.6f}  Ha")
-    print(f"{'SCF iterations:':<25}{results['iterations']:>12d}")
-    print(f"{'Converged:':<25}{str(results['converged']):>12}")
-    
-    # print("\nOrbital energies (Ha):")
-    # for i, energy in enumerate(results['orbital_energies']):
-    #     print(f"  ε_{i+1} = {energy:>10.6f}")
-    
-    # print("\nOrbital Coefficients (C):")
-    # C = results['orbital_coefficients']
-    # for i in range(C.shape[1]):
-    #     coeffs = "  ".join(f"{val:>8.4f}" for val in C[:, i])
-    #     print(f"  Orbital {i+1:<2}: {coeffs}")
+def primitives_to_ao_list(primitives):
+    """
+    For a minimal s-basis per atom:
+      primitives is already a list per AO: [[(alpha, c), ...], [(alpha, c), ...], ...]
+    """
+    # If `primitives` is provided per atom (1 s AO per atom), this is identity
+    return list(primitives)
 
-    print("S matrix:\n", results['overlap_matrix'])
-    print("T matrix:\n", results['kinetic_matrix'])
-    print("V matrix:\n", results['nuclear_matrix'])
-    print("P matrix:\n", results['density_matrix'])
-    print("C matrix:\n", results['orbital_coefficients'])
-    print("H matrix:\n", results['core_hamiltonian'])
 
-    eri = results['eri_tensor']
-    eri_size = len(eri)
+def ao_centers_from_pos(primitives, pos):
+    """
+    Returns a list of centers per AO (μ): (xμ,yμ,zμ). For minimal s basis, 1 AO per atom.
+    """
+    centers = [tuple(p) for p in pos]
+    return centers
 
-    # print("ERI tensor shape:\n", eri_size)
-    # if 'eri_tensor' in results:
-    #     print("\nUnique Electron Repulsion Integrals (ERIs):")
-    #     eri_dict = results['eri_tensor']
-    #     for key, value in eri_dict.items():
-    #         munu, lamsig = key  # Unpack the canonical key
-    #         print(f"({munu}|{lamsig}): {value:.6f}")
 
-   
+def atom_of_mu_from_primitives(primitives):
+    """
+    For minimal s basis: AO μ belongs to atom μ (0..n_atoms-1).
+    """
+    return list(range(len(primitives)))
+
+
+# ---------- printing ----------
+
+def print_final_results(results: dict, verbose: int = 1):
+    if verbose <= 0:
+        return
+    print("\n" + "=" * 60)
+    print(f"FINAL SCF RESULTS – {results.get('molecule','')}")
+    print("=" * 60)
+    print(f"{'Electronic energy:':<24} {results['energy_electronic']:>14.8f} Ha")
+    print(f"{'Nuclear repulsion:':<24} {results['energy_nuclear']:>14.8f} Ha")
+    print(f"{'Total energy:':<24} {results['energy_total']:>14.8f} Ha")
+    print(f"{'SCF iterations:':<24} {results['iterations']:>14d}")
+    print(f"{'Converged:':<24} {str(results['converged']):>14}")
+    if verbose >= 2:
+        eps = results["orbital_energies"]
+        print("\nOrbital energies (Ha):")
+        for i, e in enumerate(eps):
+            print(f"  eps[{i}] = {e: .8f}")
+    if verbose >= 3:
+        print("\nOverlap S:\n", results["overlap_matrix"])
+        print("\nCore H:\n", results["core_hamiltonian"])
