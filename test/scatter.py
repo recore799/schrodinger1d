@@ -1,12 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-import os
-
-# Add src directory to path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
-from numerov import solve_atom, solve_atom_bisection, init_mesh
+from src.numerov.numerov import solve_atom, solve_atom_bisection, init_mesh
 
 
 

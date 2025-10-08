@@ -2,26 +2,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ----------------- USER DATA (from your run) -----------------
-# MO coefficients you printed (nbasis x nmo)
-C = np.array([[-0.54893391,  -1.2114655],
-              [-0.54893391, 1.2114655]])
+# MO coefficients
+C = np.array([[-0.80140853,  0.78233794],
+              [-0.33768711, -1.06783692]])
 
-# density matrix you printed (will use this by default)
-P_user = np.array([[0.60265687, 0.54124998],
-                   [0.60265687, 0.60265687]])
+# density matrix
+P = np.array([[1.28451268, 0.54124998],
+                   [0.54124998, 0.22806435]])
 
 # If you prefer to recompute P from C (RHF closed-shell: 2 * sum occ C[:,i]C[:,i].T)
 # uncomment the next line to compute P from C instead:
-# P_user = 2.0 * np.outer(C[:,0], C[:,0])   # HeH+ has 2 electrons: only 1 occupied MO (i=0)
+# P = 2.0 * np.outer(C[:,0], C[:,0])   # HeH+ has 2 electrons: only 1 occupied MO (i=0)
 
-# Geometry you gave (Angstrom)
-centers_ang = np.array([[0.0, 0.0, 0.0],    # He at origin
-                        [1.4, 0.0, 0.0]]) # H placed at x=1.4632 Å (change if needed)
+# Geometry (Angstrom)
+centers = np.array([[0.0, 0.0, 0.0],    # He at origin
+                        [1.4632, 0.0, 0.0]]) # H placed at x=1.4632 Å (change if needed)
 
-# zeta values you provided
+# gaussian exponents
 zeta_H  = 1.24
-zeta_He = 1.24
+zeta_He = 2.095
 
 # ----------------- STO-3G 1s reference primitives (zeta = 1) ---------------
 # Standard STO-3G 1s primitive exponents and contraction coeffs (zeta=1).
@@ -35,9 +34,9 @@ c_ref     = np.array([0.154329, 0.535328, 0.444635])  # contraction coefficients
 zetas = [zeta_He, zeta_H]
 nbasis = len(zetas)
 
-# convert Angstrom -> Bohr for internal computation
-ang_to_bohr = 1.0 / 0.529177210903
-centers = centers_ang * ang_to_bohr
+# convert Angstrom -> Bohr for internal computation if needed
+# ang_to_bohr = 1.0 / 0.529177210903
+# centers = centers * ang_to_bohr
 
 # ---------- helper functions ----------
 def norm_prim_s(alpha):
@@ -101,8 +100,8 @@ xmin, xmax = -2.5, 2.5   # Angstrom
 ymin, ymax = -2.5, 2.5
 nx, ny = 400, 400        # resolution
 
-xs = np.linspace(xmin, xmax, nx) * ang_to_bohr
-ys = np.linspace(ymin, ymax, ny) * ang_to_bohr
+xs = np.linspace(xmin, xmax, nx) #* ang_to_bohr
+ys = np.linspace(ymin, ymax, ny) #* ang_to_bohr
 X, Y = np.meshgrid(xs, ys, indexing='xy')
 Z = np.zeros_like(X)
 rgrid = np.stack([X.ravel(), Y.ravel(), Z.ravel()], axis=-1) # (N,3)
@@ -115,7 +114,6 @@ for mu in range(nbasis):
     Phi[mu,:] = eval_contracted_s(alphas, c, Nprims, Ncontr, R, rgrid)
 
 # ---------- density on grid ----------
-P = P_user
 rho_flat = np.einsum('mn,mk,nk->k', P, Phi, Phi)
 rho = rho_flat.reshape((ny, nx))
 
@@ -128,20 +126,20 @@ fig, ax = plt.subplots(1,2, figsize=(13,5))
 
 # density
 levels = np.linspace(0.0, rho.max(), 40)
-im = ax[0].contourf(X/ang_to_bohr, Y/ang_to_bohr, rho, levels=levels, cmap='viridis')
+im = ax[0].contourf(X, Y, rho, levels=levels, cmap='viridis') # divide by ang_to_bohr if needed
 ax[0].set_title('Electron density (STO-3G, slice z=0)')
 ax[0].set_xlabel('x (Å)'); ax[0].set_ylabel('y (Å)')
-for i, R in enumerate(centers_ang):
+for i, R in enumerate(centers):
     ax[0].scatter(R[0], R[1], marker='o', s=140, edgecolor='k', zorder=5,
-                  label='H' if i==0 else 'H')
+                  label='He' if i==0 else 'H')
 ax[0].legend()
 fig.colorbar(im, ax=ax[0], label=r'$\rho$ (e / $a_0^3$)')
 
 # occupied MO^2
-im2 = ax[1].contourf(X/ang_to_bohr, Y/ang_to_bohr, psi2_map, levels=40, cmap='plasma')
+im2 = ax[1].contourf(X, Y, psi2_map, levels=40, cmap='plasma') # divide by ang_to_bohr if needed
 ax[1].set_title('|psi_occ|^2 (occupied MO)')
 ax[1].set_xlabel('x (Å)'); ax[1].set_ylabel('y (Å)')
-for i, R in enumerate(centers_ang):
+for i, R in enumerate(centers):
     ax[1].scatter(R[0], R[1], marker='o', s=140, edgecolor='k', zorder=5)
 fig.colorbar(im2, ax=ax[1], label='|psi|^2 (a0^-3)')
 

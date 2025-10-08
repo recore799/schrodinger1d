@@ -77,10 +77,9 @@ Si $\psi''(x)=f(x)\,\psi(x)$, el esquema de \textbf{Numerov} (paso $h$) es
         \left(1+\tfrac{1}{12}h^2 f_{n-1}\right)\psi_{n-1}}
        {1+\tfrac{1}{12}h^2 f_{n+1}}.
 \]
-\textbf{Notas didácticas breves:}
+\textbf{Notas:}
 \begin{itemize}
-  \item Precisión de orden 6, estable para potenciales suaves.
-  \item Discretización de frontera y búsqueda de $E$ por \emph{shooting} / nodos.
+  \item Discretización del espacia y búsqueda de $E$ por \emph{shooting} / nodos.
   \item Comparación con soluciones analíticas para OA y H.
 \end{itemize}
 
@@ -150,10 +149,10 @@ donde $\mathbf{F}$ es el operador de Fock, $\mathbf{S}$ la matriz de traslape, $
 
 \begin{block}{Resultados RHF}
 \begin{center}
-\includegraphics[width=0.95\linewidth]{density.png}\\[-0.2em]
-{\small Densidad electrónica RHF (plano $z=0$).}\\[0.6em]
-\includegraphics[width=0.95\linewidth]{hydrogen.png}\\[-0.2em]
-{\small Curva $E_{\mathrm{tot}}(R)$ para H$_2$ (HF).}\\[0.6em]
+\includegraphics[width=0.95\linewidth]{densityh2.png}\\[-0.2em]
+{\small Densidad electrónica RHF para H$_2$ (plano $z=0$).}\\[0.6em]
+\includegraphics[width=0.95\linewidth]{densityheh.png}\\[-0.2em]
+{\small Densidad electrónica RHF para HeH$^+$ (plano $z=0$).}\\[0.6em]
 \includegraphics[width=0.95\linewidth]{hydrogen.png}\\[-0.2em]
 {\small Curva $E_{\mathrm{tot}}(R)$ para HeH$^+$ (HF).}
 \end{center}
@@ -177,18 +176,6 @@ donde $\mathbf{F}$ es el operador de Fock, $\mathbf{S}$ la matriz de traslape, $
 \medskip
 
 \textbf{Estrategia de código (repo)}:
-\begin{itemize}
-  \item \texttt{src/numerov/}: integrador y scripts OA/H.
-  \item \texttt{src/hf/}: SCF (RHF), helpers de grilla para MO/densidad.
-  \item \texttt{examples/}: \emph{PEC H$_2$}, \emph{PEC HeH$^+$}, \emph{MO maps}, \emph{Mulliken}.
-  \item \texttt{docs/} (GitHub Pages): animaciones y derivaciones completas.
-\end{itemize}
-
-\textbf{Notas prácticas}:
-\begin{itemize}
-  \item Base mínima s-GTO \(\Rightarrow\) visualización rápida de $\sigma_g$, $\sigma_u$.
-  \item Densidad en cortes 2D para el póster; 3D/isosuperficies en la web.
-\end{itemize}
 \end{block}
 
 \begin{block}{Conclusiones}

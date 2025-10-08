@@ -93,30 +93,58 @@ def scf_rhf(
     if verbose >= 1 and not converged:
         print(f"[RHF] WARNING: did not converge in {max_iter} iterations (ΔP_rms={rms_change:.3e})")
     
-    # Calculate final properties
+    # Package results
     results = {
-        # Default results
-        'energy_electronic': E_elec,
-        'energy_nuclear': E_nuc,
-        'energy_total': E_total,
-        'orbital_energies': orbital_energies,
-        'orbital_coefficients': C,
-        'density_matrix': P,
-        'fock_matrix': F,
-        'overlap_matrix': S,
-        'kinetic_matrix': T,
-        'nuclear_matrix': V,
-        'core_hamiltonian': H_core,
-        'iterations': iteration + 1,
-        'converged': rms_change < conv_tol,
-        'eri_tensor': eri_dict,
-        'molecule': molecule
-        
+        "energy_electronic": E_elec,
+        "energy_nuclear": E_nuc,
+        "energy_total": E_total,
+        "orbital_energies": orbital_energies,
+        "orbital_coefficients": C,
+        "density_matrix": P_new if converged else P,  # last density
+        "fock_matrix": F,
+        "overlap_matrix": S,
+        "kinetic_matrix": T,
+        "nuclear_matrix": V,
+        "core_hamiltonian": H_core,
+        "iterations": iteration,
+        "converged": converged,
+        "eri_tensor": eri_dict,
+        "molecule": molecule,
+        # --- extras for plotting / analysis ---
+        "n_occ": n_occ,
+        "ao_primitives": primitives_to_ao_list(primitives),
+        "ao_centers": ao_centers_from_pos(primitives, pos),
+        "atom_of_mu": atom_of_mu_from_primitives(primitives),
+        "Z_nuc": Z_nuc,
+        "R_nuc": R_nuc,
     }
-    
+
     print_final_results(results, verbose)
-    
     return results
+
+    # results = {
+    #     # Default results
+    #     'energy_electronic': E_elec,
+    #     'energy_nuclear': E_nuc,
+    #     'energy_total': E_total,
+    #     'orbital_energies': orbital_energies,
+    #     'orbital_coefficients': C,
+    #     'density_matrix': P,
+    #     'fock_matrix': F,
+    #     'overlap_matrix': S,
+    #     'kinetic_matrix': T,
+    #     'nuclear_matrix': V,
+    #     'core_hamiltonian': H_core,
+    #     'iterations': iteration + 1,
+    #     'converged': rms_change < conv_tol,
+    #     'eri_tensor': eri_dict,
+    #     'molecule': molecule
+        
+    # }
+    
+    # print_final_results(results, verbose)
+    
+    # return results
 
 def compute_nuclear_repulsion_energy(Z_nuc, R_nuc):
     # Nuclear repulsion energy (generalized for polyatomics)
@@ -144,6 +172,18 @@ def build_fock_matrix_sparse(H_core: np.ndarray, P: np.ndarray, eri_dict: dict) 
                     G[mu, nu] += P[lam, sig] * (eri1 - 0.5 * eri2)
 
     return H_core + G
+
+def primitives_to_ao_list(primitives):
+    """For a minimal s-basis per atom."""
+    return list(primitives)
+
+def ao_centers_from_pos(primitives, pos):
+    """For minimal s basis: 1 AO per atom → use atom positions."""
+    return [tuple(p) for p in pos]
+
+def atom_of_mu_from_primitives(primitives):
+    """AO μ belongs to atom μ (0..n_atoms-1)."""
+    return list(range(len(primitives)))
 
 
 def print_final_results(results: dict, verbose: int = 1):

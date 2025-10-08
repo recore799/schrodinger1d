@@ -1,0 +1,172 @@
+\documentclass[final]{beamer}
+\usepackage[orientation=portrait,size=a0,scale=1.2]{beamerposter}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{graphicx} % Para incluir imágenes
+\usepackage{amsmath}  % Para ecuaciones matemáticas
+\usepackage{multicol} % Para controlar columnas de texto si fuera necesario dentro de un bloque
+\usepackage{caption}  % Para controlar las leyendas de las figuras (captionof)
+
+% --- Configuración del Tema y Colores (Opcional, puedes cambiarlo) ---
+% Para pósters, a menudo se usa un tema minimalista o se crea uno propio.
+% Aquí usaremos un tema base y ajustaremos.
+\usetheme{Madrid} % Puedes elegir otros temas como Berlin, Warsaw, etc.
+\usecolortheme{default} % Tema de color por defecto
+
+% Ajustes para el tamaño de la fuente si el póster es grande
+% \documentclass[final, bigger]{beamer} % o similar, dependiendo de la distribución de Beamer para pósters
+% Para pósters, a veces se usa una plantilla específica como 'beamerthemeposter' o se ajusta el tamaño de la fuente.
+% Como estamos usando beamer directamente, haremos un "póster" con frames.
+% Si buscas un póster de gran formato, considera usar la clase 'a0poster' o paquetes especializados.
+% Para este ejercicio, asumiremos que es una presentación tipo póster con diapositivas grandes.
+
+% --- Información del Cartel ---
+\title{Título de tu Cartel Científico}
+\author{Tu Nombre / Nombres de los Autores}
+\institute{Tu Institución o Afiliación}
+\date{\today}
+
+\begin{document}
+
+% --- Frame Principal del Póster (una sola "diapositiva" grande para el póster) ---
+\begin{frame}[t] % 't' alinea el contenido en la parte superior
+
+\begin{center}
+    \textbf{\Huge \inserttitle} \\ % Título grande
+    \vspace{0.5cm}
+    \Large \insertauthor \\ % Autor
+    \small \insertinstitute \\ % Institución
+    \vspace{0.8cm}
+\end{center}
+
+% Estructura de Columnas para simular tu diagrama
+\begin{columns}[T] % 'T' alinea las columnas por la parte superior
+
+    % --- Columna Izquierda (aproximadamente 45% del ancho) ---
+    \begin{column}{0.48\textwidth} % Ancho de la columna izquierda
+
+        % Fila 1: Intro
+        \begin{block}{Introducción}
+            Aquí va el texto de tu introducción. Explica el contexto, la motivación
+            y los objetivos principales de tu investigación. Sé conciso y directo.
+        \end{block}
+
+        % Fila 2: Numeral / Marco Teórico
+        \begin{block}{Numeral / Marco Teórico}
+            Desarrolla los conceptos fundamentales o el marco teórico que sustenta tu trabajo.
+            Puedes incluir ecuaciones relevantes, por ejemplo:
+            $$ E = mc^2 $$
+            O descripciones de modelos.
+        \end{block}
+
+        % Fila 3: Tres Imágenes Apiladas (Una a la izquierda, dos apiladas a la derecha)
+        % Para simular la cuadrícula "Im | Im", "Im"
+        \begin{block}{Imágenes y Conceptos}
+            \begin{figure}
+                \centering
+                % Primera imagen (ocupando el ancho del bloque)
+                \includegraphics[width=0.9\linewidth]{example-image-a}
+                \captionof{figure}{Descripción de la primera imagen.}
+            \end{figure}
+            \vspace{0.5cm}
+            \begin{figure}
+                \centering
+                % Segunda imagen (ocupando el ancho del bloque)
+                \includegraphics[width=0.9\linewidth]{example-image-b}
+                \captionof{figure}{Descripción de la segunda imagen.}
+            \end{figure}
+            \vspace{0.5cm}
+            \begin{figure}
+                \centering
+                % Tercera imagen (ocupando el ancho del bloque)
+                \includegraphics[width=0.9\linewidth]{example-image-c}
+                \captionof{figure}{Descripción de la tercera imagen.}
+            \end{figure}
+            % Si quieres que sean dos imágenes lado a lado y una abajo,
+            % tendrías que anidar 'columns' dentro del block, pero para simplicidad
+            % las apilamos para que quepan bien en el espacio asignado.
+        \end{block}
+
+        % Fila 4: Metodología / Didáctica
+        \begin{block}{Metodología y Didáctica}
+            Describe los métodos utilizados en tu investigación. Si es aplicable,
+            detalla el enfoque didáctico o las herramientas pedagógicas empleadas.
+            \begin{itemize}
+                \item Paso 1 del método
+                \item Paso 2 del método
+                \item Consideraciones didácticas si las hay.
+            \end{itemize}
+        \end{block}
+
+    \end{column}
+
+    % --- Columna Derecha (aproximadamente 45% del ancho) ---
+    \begin{column}{0.48\textwidth} % Ancho de la columna derecha
+
+        % Fila 1: Imagen Principal Derecha
+        \begin{block}{Imagen de Contexto}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\linewidth]{example-image-a} % Reemplaza con tu imagen
+                \captionof{figure}{Imagen principal relacionada con el título o la introducción.}
+            \end{figure}
+        \end{block}
+
+        % Fila 2: Dos Imágenes Pequeñas
+        \begin{block}{Ilustraciones Clave}
+            \begin{figure}
+                \centering
+                \includegraphics[width=0.48\linewidth]{example-image-b} % Primera imagen pequeña
+                \includegraphics[width=0.48\linewidth]{example-image-c} % Segunda imagen pequeña
+                \captionof{figure}{Imágenes que complementan el marco teórico o la metodología.}
+            \end{figure}
+        \end{block}
+
+        % Fila 3: Sección Hartree-Fock
+        \begin{block}{Método Hartree-Fock}
+            Aquí puedes desarrollar la sección específica sobre el método Hartree-Fock.
+            Explica sus principios, aplicaciones y resultados relevantes en tu estudio.
+            \begin{itemize}
+                \item Descripción teórica.
+                \item Ecuaciones clave (e.g., ecuaciones de Hartree-Fock).
+                $$ F \phi_i = \epsilon_i \phi_i $$
+                \item Resultados obtenidos usando este método.
+            \end{itemize}
+        \end{block}
+
+        % Fila 4: Entrevista
+        \begin{block}{Resultados de Entrevista / Análisis}
+            Si realizaste entrevistas, aquí presenta los hallazgos clave, citas relevantes
+            o un análisis cualitativo de los datos obtenidos.
+            \begin{itemize}
+                \item Puntos principales de las entrevistas.
+                \item Análisis de los datos.
+                \item Implicaciones.
+            \end{itemize}
+        \end{block}
+
+        % Fila 5: Conclusión y QR
+        \begin{block}{Conclusión y Contacto}
+            Resume los hallazgos más importantes de tu cartel y sus implicaciones.
+            Asegúrate de responder a los objetivos planteados en la introducción.
+            \begin{itemize}
+                \item Resumen de los resultados.
+                \item Contribuciones principales.
+                \item Trabajo futuro.
+            \end{itemize}
+            \vspace{0.5cm}
+            \centering
+            % Aquí puedes poner una imagen de un código QR
+            \includegraphics[width=0.3\linewidth]{example-image-1x1} % Reemplaza con tu código QR
+            \captionof{figure}{Escanea para más información o contacto.}
+        \end{block}
+
+    \end{column}
+
+\end{columns}
+
+\end{frame}
+
+\end{document}

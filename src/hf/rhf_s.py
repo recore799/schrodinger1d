@@ -15,7 +15,6 @@ from __future__ import annotations
 import numpy as np
 from scipy.linalg import eigh, fractional_matrix_power
 
-# Keep your existing integral builder
 from src.hf.s_integrals import build_integral_arrays
 
 def scf_rhf(
@@ -76,6 +75,7 @@ def scf_rhf(
         C = X @ Cprime                 # MO coeffs in AO basis
 
         # New density
+        # P_μν = 2 * Σ_i^{occ} C_μi * C_νi
         C_occ = C[:, :n_occ]
         P_new = 2.0 * C_occ @ C_occ.T
 

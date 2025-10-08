@@ -1,0 +1,146 @@
+
+% --- ENCABEZADO ---
+% Un tcolorbox para un encabezado limpio y moderno
+\begin{tcolorbox}{
+  colback=primary, colframe=primary, rounded corners, arc=0mm, boxshadow=1mm 1mm 3mm 0mm gray!60
+}
+\begin{columns}[t]
+  \begin{column}{0.1\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{logo_unison.png}
+  \end{column}
+  \begin{column}{0.9\textwidth}
+    \centering
+    \color{white}
+    {\fontfamily{FiraSans-Heavy}\selectfont\Huge Del Pizarrón al Cómputo: Una Metodología Interactiva para la Enseñanza de la Mecánica Cuántica\par}
+    \vspace{0.5em}
+    {\fontfamily{FiraSans-Medium}\selectfont\huge Validada por la Comunidad Docente\par}
+    \vspace{1.5em}
+    {\fontfamily{FiraSans-Medium}\selectfont\Large Rafael Obed Egurrola Corella \quad (Asesor: Dr. Adrián Duarte)\par}
+    \vspace{0.5em}
+    {\fontfamily{FiraSans-Light}\selectfont\large Universidad de Sonora \quad|\quad Congreso Nacional de Física, 2025\par}
+  \end{column}
+\end{columns}
+\end{tcolorbox}
+
+\vspace{1.5em}
+
+% --- CUERPO PRINCIPAL DEL PÓSTER ---
+\begin{columns}[t,totalwidth=\textwidth]
+
+% ===========================================================
+% COLUMNA 1 — EL PROBLEMA Y LA PROPUESTA
+% ===========================================================
+\begin{column}{0.32\textwidth}
+
+\begin{mainblock}{1. La Problemática Pedagógica}
+    Basado en entrevistas con 7 profesores de física cuántica, se identificaron los principales desafíos en el aula:
+    \begin{itemize}
+        \item \textbf{Brecha conceptual:} Dificultad para conectar la matemática abstracta con fenómenos físicos observables.
+        \item \textbf{Cajas negras:} El software existente a menudo oculta los algoritmos, impidiendo una comprensión profunda del "cómo" funcionan los cálculos.
+        \item \textbf{%% <<< INSERTA AQUÍ TU HALLAZGO CLAVE #3 >>>}
+        \textit{Ej: "Falta de intuición sobre el efecto de los parámetros (bases, potenciales)."}.
+    \end{itemize}
+    \medskip
+    \textbf{Nuestro objetivo:} Desarrollar una herramienta de código abierto que transforme al estudiante de un espectador pasivo a un \textbf{experimentador numérico}.
+\end{mainblock}
+
+\begin{mainblock}{2. Solución: Aprendizaje Interactivo}
+    Proponemos un modelo basado en \textbf{cuadernos de Jupyter} que integran teoría, código y visualización.
+    \begin{itemize}
+        \item \textbf{Nivel 1: Método de Numerov} \\
+        Resolución de la Ec. de Schrödinger 1D para sistemas canónicos (OA, H). Permite explorar la relación $V(x) \leftrightarrow \psi(x), E$.
+        \item \textbf{Nivel 2: Método Hartree-Fock} \\
+        Cálculo de la estructura electrónica de moléculas diatómicas (H$_2$, HeH$^+$), introduciendo conceptos de química cuántica.
+    \end{itemize}
+    \begin{center}
+        \includegraphics[width=\linewidth]{harmonic.png}\\[-0.2em]
+        {\small Estados del Oscilador Armónico. Los estudiantes pueden modificar $V(x)$ y recalcular en segundos.}\\[0.6em]
+    \end{center}
+\end{mainblock}
+
+\end{column}
+
+% ===========================================================
+% COLUMNA 2 — LA HERRAMIENTA TÉCNICA
+% ===========================================================
+\begin{column}{0.36\textwidth}
+
+\begin{mainblock}{3. Implementación: Hartree-Fock (RHF)}
+    \textbf{Ecuaciones de Roothaan-Hall:}
+    \[ \mathbf{F C} = \mathbf{S C} \boldsymbol{\varepsilon} \]
+    La matriz de Fock $\mathbf{F}$ depende de la densidad $\mathbf{P}$, lo que requiere una solución iterativa (SCF).
+    \[ F_{\mu\nu} = H^{\mathrm{core}}_{\mu\nu} + \sum_{\lambda\sigma} P_{\lambda\sigma} \Big[(\mu\nu|\lambda\sigma) - \tfrac12\,(\mu\sigma|\lambda\nu)\Big] \]
+    \medskip
+    \textbf{Ciclo Autoconsistente (SCF):}
+    \begin{center}
+    \begin{tikzpicture}[node distance=1.6cm, every node/.style={align=center}, box/.style={rounded corners, draw=primary, very thick, fill=white, inner sep=6pt}, >=Stealth]
+        \node[box] (int) {1. Calcular Integrales};
+        \node[box, below=of int] (fock) {2. Construir $\mathbf{F}[\mathbf{P}]$};
+        \node[box, below=of fock] (diag) {3. Resolver $\mathbf{FC=SC\varepsilon}$};
+        \node[box, below=of diag] (dens) {4. Actualizar Densidad $\mathbf{P}$};
+        \draw[->,thick,primary] (int) -- (fock);
+        \draw[->,thick,primary] (fock) -- (diag);
+        \draw[->,thick,primary] (diag) -- (dens);
+        \draw[->,thick,primary] (dens) to[bend right=50] node[right, midway]{\small ¿Convergió?} (fock);
+    \end{tikzpicture}
+    \end{center}
+\end{mainblock}
+
+\begin{mainblock}{4. Resultados y Visualización}
+    La herramienta genera resultados cuantitativos y visualizaciones intuitivas para el análisis.
+    \begin{center}
+        \includegraphics[width=0.95\linewidth]{h2_pes.png}\\[-0.2em]
+        {\small Curva de energía potencial para H$_2$. Se puede estudiar el efecto de la base (STO-3G vs 6-31G).}\\[0.6em]
+        \includegraphics[width=0.95\linewidth]{densityheh.png}\\[-0.2em]
+        {\small Densidad electrónica para HeH$^+$, mostrando la polarización del enlace.}\\[0.6em]
+    \end{center}
+\end{mainblock}
+
+\end{column}
+
+% ===========================================================
+% COLUMNA 3 — VALIDACIÓN Y FUTURO
+% ===========================================================
+\begin{column}{0.32\textwidth}
+
+\begin{quoteblock}{5. Validación por Docentes}
+    Se presentó la metodología a 7 profesores de la materia.
+    \begin{itemize}
+        \item \textbf{Necesidad Confirmada:} Consenso unánime sobre la urgencia de integrar herramientas computacionales interactivas.
+        \item \textbf{Recepción Positiva:} La plataforma fue evaluada como "intuitiva", "pedagógicamente valiosa" y de complejidad "adecuada".
+        \item \textbf{%% <<< INSERTA AQUÍ TU HALLAZGO CLAVE #4 >>>}
+        \textit{Ej: "El enfoque de 'código abierto' se consideró crucial para la adaptabilidad curricular."}
+    \end{itemize}
+    \hrule\medskip
+    \centering\large\bfseries Citas Destacadas
+    \medskip
+    \small
+    \textit{"%% <<< INSERTA AQUÍ LA CITA #1 >>>"}
+    \vspace{1em}
+    \textit{"%% <<< INSERTA AQUÍ LA CITA #2 >>>"}
+\end{quoteblock}
+
+\begin{mainblock}{6. Conclusiones y Futuro}
+    \begin{itemize}
+        \item Esta metodología, \textbf{validada por expertos}, es una estrategia efectiva para modernizar la enseñanza de la física cuántica.
+        \item Los cuadernos interactivos fomentan una comprensión profunda, alineada con las competencias de la física contemporánea.
+        \item \textbf{Próximos pasos:} Expandir la biblioteca con métodos post-HF (MP2), optimizar el código y desarrollar guías de problemas para cursos.
+    \end{itemize}
+\end{mainblock}
+
+\begin{mainblock}{Material Extendido}
+    \centering
+    \qrcode[height=0.18\textwidth]{https://github.com/recore799/quantum-teaching-tools}
+    \vspace{0.5em}
+
+    {\Large\bfseries Rafael O. Egurrola Corella}
+
+    \faGithub\ \texttt{github.com/recore799}
+
+    \faEnvelope\ \texttt{recore799@gmail.com} % Cambia tu correo si lo deseas
+\end{mainblock}
+
+\end{column}
+\end{columns}
+

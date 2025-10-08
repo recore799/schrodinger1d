@@ -112,6 +112,20 @@ def update_energy(icl, f, psi, dx, ddx12, e, e_lower, e_upper):
     e = max(min(e, e_upper), e_lower)
     return e, e_lower, e_upper, de
 
+def outward_integration(psi, f, f_10, icl):
+    ncross = 0
+    for i in range(1, icl):
+        psi[i+1] = (f_10[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
+        ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
+    return psi[icl], ncross
+
+def inward_integration(psi, f, icl, mesh, f_10):
+    # Inward integration in [xmax, icl]
+    for i in range(mesh-1, icl, -1):
+        psi[i-1] = (f_10[i] * psi[i] - f[i+1] * psi[i+1]) / f[i-1]
+        if abs(psi[i-1]) > 1e10:
+            psi[i-1:-2] /= psi[i-1]
+
 
 def compute_f_and_icl_atom(mesh, ddx12, r2, lnhfsq, vpot, e):
     # Compute f in one shot (vectorized)
@@ -129,20 +143,6 @@ def compute_f_and_icl_atom(mesh, ddx12, r2, lnhfsq, vpot, e):
 
     return f, 12.0 - 10.0 * f, icl
 
-
-def outward_integration(psi, f, f_10, icl):
-    ncross = 0
-    for i in range(1, icl):
-        psi[i+1] = (f_10[i] * psi[i] - f[i-1] * psi[i-1]) / f[i+1]
-        ncross += (psi[i] * psi[i+1] < 0.0)  # Boolean to int
-    return psi[icl], ncross
-
-def inward_integration(psi, f, icl, mesh, f_10):
-    # Inward integration in [xmax, icl]
-    for i in range(mesh-1, icl, -1):
-        psi[i-1] = (f_10[i] * psi[i] - f[i+1] * psi[i+1]) / f[i-1]
-        if abs(psi[i-1]) > 1e10:
-            psi[i-1:-2] /= psi[i-1]
 
 
 def scale_normalize_atom1(psi, psi_icl, icl, x, r2):
