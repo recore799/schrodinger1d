@@ -1,0 +1,204 @@
+% Created 2025-04-20 Sun 17:29
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{bm}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{listings}
+\author{Rafael Corella, Carlos Felix, Bryan Campa}
+\date{\today}
+
+\begin{document}
+
+
+\section{Oscilador Harmonico}
+\label{sec:orgfbc7872}
+
+Al aplicar el metodo de separacion de variables la ecuacion de Schrodinger se obtiene la ecuacion de Schrodinger unidimensional para una funcion \(\psi = \psi(x)\)
+
+\begin{equation}
+\label{eq:schr1}
+\frac{\partial^{2}\psi}{\partial x^2} = - \frac{2m}{\hbar^2}(E - V(x))\psi
+\end{equation}
+
+Un sistema de oscilador armonico es cuando el potencial en la ecuacion (\ref{eq:schr1}) es
+
+\[ V(x) = - \frac{1}{2}K x^2. \]
+donde \(K\) es una constante.
+
+El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimensionales:
+
+\begin{itemize}
+\item Variable adimensional \(\xi\)
+\item Esta variable se relaciona con \(x\) por medio de la longitud \(\lambda\) de modo que \(x = \lambda \xi\)
+\end{itemize}
+
+\[ \pdv[2]{\psi}{(\lambda \xi)} = \qty( - \frac{2m E }{\hbar^2} + \frac{mK \lambda^2}{\hbar^2} \xi^2  )\psi \]
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m E \lambda^{2}}{\hbar^2} + \frac{mK \lambda^4}{\hbar^2} \xi^2  )\psi \]
+
+\begin{itemize}
+\item Hacemos \(mK\lambda^4 /\hbar^2 = 1\), de donde
+
+\[ \lambda = (\hbar^2/mK)^{1/4} \]
+
+\item Relacionamos la frecuencia angular del oscilador con la constante de fuerza
+
+\[ \omega = \sqrt{\frac{K}{m}} \implies K = m\omega^2 \]
+
+\item La variable adimensional queda
+
+\[ \lambda\xi = x \implies \xi=\qty(\frac{mK}{\hbar^2})^{1/4} x = \qty(\frac{m \omega}{\hbar})^{1/2} x  \]
+
+\item Introducimos la energia adimensional \(\epsilon\)
+
+\[ \epsilon = \frac{2E}{\hbar \omega} \]
+
+\item Sustituyendo estas expresiones en la ecuacion de Schrödinger
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m E \lambda^{2}}{\hbar^2} + \frac{mK \lambda^4}{\hbar^2} \xi^2  )\psi \]
+
+\[ \pdv[2]{\psi}{\xi} = \qty( - \frac{2m (\epsilon \hbar \omega/2) (\hbar^2/m^2\omega^2)^{1/2}}{\hbar^2} +  \xi^2  )\psi \]
+
+\item Finalmente la ecuacion de Schrödinger adimensional es:
+
+\begin{equation}
+\label{eq:ho}
+\boxed{\pdv[2]{\psi}{\xi} = -2\qty(\epsilon - \frac{\xi^2}{2})\psi}
+\end{equation}
+\end{itemize}
+
+con \(V(\xi) = \frac{1}{2}\xi^2\).
+\subsection{Solucion Exacta}
+\label{sec:orgf4bf1a0}
+
+\subsubsection{Analisis asintotico}
+\label{sec:org2788a5b}
+
+Para grande \(\xi\), las soluciones de (\ref{eq:ho}), donde \(\epsilon\) se puede despreciar, son de la forma
+
+\[ \psi(\xi) \sim \xi^n e^{\pm \xi^2/2}, \]
+
+donde \(n\) cualquier valor finito. El exponente con signo positivo da lugar a funciones de onda no normalizables por lo que corresponde a soluciones no fisicas. Entonces asumimos que su comportamiento asintotico hace que la funcion de onda sea
+
+\begin{equation}
+\label{eq:ho_sol1}
+\psi(\xi) = H(\xi)e^{-\xi^2/2}
+\end{equation}
+
+donde \(H(\xi)\) es alguna funcion bien comportada para \(\xi\) grande (de modo que el comportamiento asintotico este determinado por el factor \(e^{-\xi^2/2}\)). En particular \(H(\xi)\) no debe crecer como \(e^{\xi^2}\) para asi obtener soluciones fisicas. Bajo asumir que la funcion de onda es (\ref{eq:ho_sol1}), la ecuacion (\ref{eq:ho}) se convierte en una ecuacion para \(H(\xi)\):
+
+\begin{gather*}
+    \dv[2]{\xi}(H(\xi)e^{-\xi^2}/2) = -2\qty(\epsilon- \frac{\xi^2}{2})H(\xi)e^{-\xi^2/2} \\
+    \dv[2]{H(\xi)}{\xi} e^{-\xi^2/2}  -\xi\dv{H(\xi)}{\xi}e^{-\xi^2/2} - \xi\dv{H(\xi)}{\xi}e^{-\xi^2/2} + \xi^2 H(\xi)e^{-\xi^2/2}- H(\xi) e^{-\xi^2/2} = -2\qty(\epsilon- \frac{\xi^2}{2})H(\xi)e^{-\xi^2/2} \\
+    \dv[2]{H(\xi)}{\xi} - 2\xi \dv{H(\xi)}{\xi} + (2\epsilon - 1)H(\xi) = 0
+\end{gather*}
+
+Se expande la solucion \(H(\xi)\) en una serie de potencias
+
+\[ H(\xi) = \sum_{n=0}^{\infty} A_n\xi^n \]
+
+la primer derivada es simplemente
+
+\[ \dv{H}{\xi} = \sum_{n=0}^{\infty} nA_n\xi^{n-1} \]
+
+para la segunda derivada, diferenciamos cada termino
+
+\[ \dv[2]{H}{\xi} = \dv{\xi}(A_1 + 2A_2\xi + 3A_3 \xi^2 + ... ) = 2A_2 + 2*3 A_3\xi + 3*4 A_4\xi^2 + ... = \sum_{n=0}^{\infty} (n+1)(n+2)A_{n+2} \xi^n \]
+sustituyendo en la ecuacion para \(H(\xi)\) se tiene
+
+\begin{align*}
+    &\dv[2]{H(\xi)}{\xi} - 2\xi \dv{H(\xi)}{\xi} + (2\epsilon - 1)H(\xi) = 0 \\
+    &\sum_{n=0}^{\infty} \{(n+1)(n+2)A_{n+2} \xi^n  - 2\xi(nA_n\xi^{n-1}) + (2\epsilon - 1)A_n\xi^n \}= 0 \\
+    &\sum_{n=0}^{\infty}  \{(n+1)(n+1) A_{n+2} + (2\epsilon - 2n - 1)A_n \} \xi^n = 0
+\end{align*}
+
+esta expresion se debe satisfacer para todo \(\xi\) por el teorema de existencia y unicidad, entonces los coeficientes de todo orden deben ser cero:
+
+\[ (n+2)(n+1)A_{n+2} + (2\epsilon - 2n -1)A_n  =0 \]
+
+asi, dados \(A_0\) y \(A_1\), se puede determinar por recursion \(H(\xi)\) como una serie de potencias
+
+\begin{equation}
+\label{eq:rec-hermite}
+     A_{n+2} = \frac{(2\epsilon - 2n -1)A_n}{n^2 + 3n + 2}
+\end{equation}
+
+\begin{gather*}
+    \text{Para \(n\) muy grande, se tiene:} \\
+    A_{n+2}  \sim \frac{2A_n}{n}
+\end{gather*}
+
+Se resuelve esta recursion para el caso par e impar:
+
+\begin{itemize}
+\item Para una potencia par \(n=2k\):
+
+\[ A_{2k+2} \sim \frac{1}{k}A_{2k} \]
+
+\item Iterando:
+
+\[ A_{2k} \sim \frac{1}{k-1}A_{2k-2} \sim \frac{1}{k-1}\cdot \frac{1}{k-2}A_{2k-4}\sim \frac{A_0}{(k-1)!} \]
+
+\item Usando \((k-1)! = k!/k\), para \(k\) muy grande, la solucion a la recursion es
+
+\[ A_{2k} \sim \frac{A_0}{k!} \]
+
+\item Similarmente, para una potencia impar \(n = 2k+1\):
+
+\begin{gather*}
+A_{2k+3} \sim \frac{2}{2k+1}A_{2k+1} \sim \frac{1}{k}A_{2k+1} \\
+A_{2k+1} \sim \frac{A_1}{k!}
+\end{gather*}
+
+\item Por lo tanto, para \(n\) muy grande, la recursion se comporta como:
+\end{itemize}
+
+\[ A_n \sim \frac{1}{(n/2)!} \]
+
+Esto implica:
+
+\[ H(\xi) \sim \sum_k \qty[\frac{A_0}{k!}\xi^{2k} + \frac{A_1}{k!}\xi^{2k+1}] = A_0e^{\xi^2} + A_1\xi e^{\xi^2} \]
+
+Esta expresion se interpreta como que la recurrencia (\ref{eq:rec-hermite}) produce una funcion \(H(\xi)\) que crece como \(e^{\xi^2}\) y da soluciones divergentes, i.e. no fisicas. Para prevenir este comportamiento, debemos truncar la serie despues de algun \(n\) y asi reducir la solucion a un polinomio de grado finito. Entonces, en la recursion (\ref{eq:rec-hermite}), para que la serie termine,
+
+\begin{gather*}
+      A_{n+2} = \frac{(2\epsilon - 2n -1)A_n}{(n+2)(n+1)} \\
+      2\epsilon - 2n -1 = 0 \\
+      \epsilon = n + \frac{1}{2}
+\end{gather*}
+
+donde \(n\) es un entero positivo. Esta condicion nos da la cuantizacion de la energia del oscilador harmonico:
+
+\begin{equation}
+\label{eq:ho-energy}
+    E_n = (n+\frac{1}{2})\hbar \omega \qc n \in \mathbb{Z}^+
+\end{equation}
+
+Los polinomios correspondientes \(H_n(\xi)\) son los polinomios de Hermite, donde \(H_n(\xi)\):
+
+\begin{itemize}
+\item Es de grado \(n\) en \(\xi\)
+
+\item Tiene \(n\) nodos
+
+\item Es par para \(n\) par e impar para \(n\) impar
+\end{itemize}
+
+Finalmente, la funcion de onda correspondiente a la energia \(E_n\) es
+
+\[ \psi_n(\xi) = H_n(\xi)e^{-\xi^2/2} \]
+\end{document}
