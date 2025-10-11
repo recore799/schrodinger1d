@@ -1,248 +1,139 @@
-<!doctype html>
-<html lang="es" class="scroll-smooth">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Explorando sistemas cuánticos con Python</title>
-  <meta name="description" content="Numerov (OA y H) y Hartree–Fock (H2, HeH+): recursos didácticos y resultados." />
-  <link rel="icon" href="assets/figs/favicon.png" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Taxonomía de Bloom — Pirámide</title>
+<style>
+  :root{
+    --bg:#0d1117;        /* fondo estilo GitHub dark */
+    --fg:#e6edf3;
+    --accent:#58a6ff;
+    /* Colores de las franjas (puedes cambiarlos) */
+    --c6:#e6c4ff;  /* Crear */
+    --c5:#ffe08a;  /* Evaluar */
+    --c4:#a7e3ff;  /* Analizar */
+    --c3:#8ee3e5;  /* Aplicar */
+    --c2:#a7d388;  /* Comprender */
+    --c1:#f5c1a1;  /* Recordar */
+  }
+  /* Reset mínimo */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+    background:var(--bg); color:var(--fg);
+    display:grid; place-items:center; padding:24px;
+  }
+  .wrap{
+    max-width:1100px; width:100%;
+  }
+  header{
+    text-align:center; margin-bottom:18px;
+  }
+  header h1{
+    margin:0 0 6px; font-weight:800; letter-spacing:.2px; color:var(--accent);
+    font-size:clamp(24px, 4vw, 40px);
+  }
+  header p{
+    margin:0; opacity:.85; font-size:clamp(14px, 2vw, 18px)
+  }
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // paleta rápida
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { DEFAULT: '#3B82F6' }, /* azul elegante */
-            ink: { DEFAULT: '#0f172a' },
-          }
-        }
-      }
-    }
-  </script>
+  .card{
+    background:#0b1320; border:1px solid #1f2a3a; border-radius:16px;
+    padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
 
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  /* Contenedor responsivo del SVG */
+  .pyramid{
+    width:100%; aspect-ratio:16/9; /* mantiene proporción */
+    display:block;
+  }
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
-          onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});">
-  </script>
+  /* Pie de página */
+  .meta{
+    margin-top:12px; font-size:.9rem; opacity:.8; text-align:center;
+  }
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  /* Badge sencilla */
+  .badge{
+    display:inline-block; padding:.2rem .6rem; border:1px solid #224; border-radius:999px;
+    font-size:.75rem; opacity:.9; margin-top:.4rem
+  }
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      GLightbox({ selector: '.glightbox' });
-    });
-  </script>
-
-  <style>
-    /* detalles sutiles */
-    .glass { backdrop-filter: blur(8px); background: rgba(255,255,255,.7); }
-    @media (prefers-color-scheme: dark) {
-      .glass { background: rgba(15,23,42,.6); }
-    }
-  </style>
+  /* Ayuda de accesibilidad para usuarios con motion reducido */
+  @media (prefers-reduced-motion:no-preference){
+    .card{transition:transform .4s ease}
+    .card:hover{transform:translateY(-2px)}
+  }
+</style>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
-  <header class="sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-950/70 glass">
-    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-      <a href="#" class="font-semibold tracking-tight">Quantum·Edu</a>
-      <nav class="hidden md:flex gap-6 text-sm">
-        <a href="numerov.html" class="hover:text-primary">Numerov</a>
-        <a href="hf.html" class="hover:text-primary">Hartree–Fock</a>
-        <a href="#resultados" class="hover:text-primary">Resultados</a>
-        <a href="#recursos" class="hover:text-primary">Recursos</a>
-      </nav>
-      <a href="https://github.com/TU_USUARIO/TU_REPO" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">GitHub</a>
-    </div>
-  </header>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Evolución de la taxonomía de Bloom</h1>
+      <p>Pirámide interactiva y responsiva inspirada en el estilo de la UOC (niveles clásicos).</p>
+      <div class="badge">Crear · Evaluar · Analizar · Aplicar · Comprender · Recordar</div>
+    </header>
 
-  <section class="relative overflow-hidden">
-    <div class="mx-auto max-w-6xl px-4 pt-16 pb-20 grid md:grid-cols-2 gap-10 items-center">
-      <div>
-        <h1 class="text-4xl md:text-5xl font-bold leading-tight">
-          Explorando sistemas cuánticos con <span class="text-primary">Python</span>
-        </h1>
-        <p class="mt-4 text-slate-600 dark:text-slate-300">
-          Implementaciones docentes de **Numerov** (oscilador armónico y átomo de hidrógeno) y **Hartree–Fock** (H₂, HeH⁺). Diseñado para cursos saturados, con enfoque en niveles altos de Bloom.
-        </p>
-        <div class="mt-6 flex gap-3">
-          <a href="numerov.html" class="px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">Ver Código Numerov</a>
-          <a href="hf.html" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">Ver Código Hartree–Fock</a>
-        </div>
+    <section class="card">
+      <!--
+        SVG escalable: un triángulo actúa como clipPath.
+        Dibujamos 6 rectángulos (bandas) que se recortan por la pirámide.
+        Luego colocamos etiquetas centradas en cada franja.
+      -->
+      <svg class="pyramid" viewBox="0 0 1600 900" role="img" aria-labelledby="tit desc">
+        <title id="tit">Pirámide de la taxonomía de Bloom</title>
+        <desc id="desc">Seis niveles horizontales dentro de un triángulo isósceles: Recordar, Comprender, Aplicar, Analizar, Evaluar y Crear.</desc>
+
+        <!-- Borde de la pirámide -->
+        <defs>
+          <clipPath id="clip-tri">
+            <!-- Triángulo con base ancha y vértice centrado arriba -->
+            <polygon points="800,40 1540,860 60,860"/>
+          </clipPath>
+        </defs>
+
+        <!-- Fondo y contorno -->
+        <polygon points="800,40 1540,860 60,860"
+                 fill="#08101c" stroke="#1e2b40" stroke-width="14" />
+
+        <!-- Franjas (rectángulos recortados por el triángulo) -->
+        <g clip-path="url(#clip-tri)">
+          <!-- De abajo hacia arriba. Alturas en pixeles para un look equilibrado -->
+          <rect x="0" y="760" width="1600" height="140" fill="var(--c1)"/>
+          <rect x="0" y="640" width="1600" height="130" fill="var(--c2)"/>
+          <rect x="0" y="520" width="1600" height="120" fill="var(--c3)"/>
+          <rect x="0" y="400" width="1600" height="120" fill="var(--c4)"/>
+          <rect x="0" y="280" width="1600" height="120" fill="var(--c5)"/>
+          <rect x="0" y="160" width="1600" height="120" fill="var(--c6)"/>
+        </g>
+
+        <!-- Etiquetas centradas en cada franja -->
+        <g font-family="system-ui,Segoe UI,Roboto" font-weight="700" text-anchor="middle">
+          <text x="800" y="830" font-size="42" fill="#14202e">Recordar</text>
+          <text x="800" y="710" font-size="42" fill="#14202e">Comprender</text>
+          <text x="800" y="595" font-size="42" fill="#0b1a1b">Aplicar</text>
+          <text x="800" y="475" font-size="42" fill="#0a1a28">Analizar</text>
+          <text x="800" y="355" font-size="42" fill="#2a2306">Evaluar</text>
+          <text x="800" y="235" font-size="42" fill="#2a0b3d">Crear</text>
+        </g>
+
+        <!-- Etiqueta lateral “Nuevas acciones” opcional -->
+        <g font-family="system-ui,Segoe UI,Roboto" font-size="26" fill="#cdd9e5" opacity=".9">
+          <text x="1020" y="170">Nuevas acciones</text>
+          <text x="1020" y="205">• Planificar y trazar estrategias</text>
+          <text x="1020" y="235">• Integrar y combinar herramientas</text>
+          <text x="1020" y="265">• Conducir y documentar procesos</text>
+          <text x="1020" y="295">• Diseñar prompts y evaluar sesgos</text>
+        </g>
+      </svg>
+
+      <div class="meta">
+        Puedes cambiar colores en <code>:root</code> o editar los textos dentro del SVG.  
+        Si quieres otra paleta, dime y la ajusto.
       </div>
-      <div class="relative">
-        <img src="assets/figs/oscillator_states.png" alt="Oscilador armónico" class="rounded-2xl shadow-xl">
-        <div class="absolute -bottom-4 -right-4 bg-white/80 dark:bg-slate-900/80 glass rounded-xl p-3 shadow-lg">
-          <p class="text-xs">Gráficas generadas con tu implementación de Numerov</p>
-        </div>
-      </div>
-    </div>
-  </section>
-  
-  ---
-  
-  <section id="bloom" class="py-14 bg-white/70 dark:bg-slate-900/40">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 class="text-2xl md:text-3xl font-semibold">Enfoque Pedagógico: Taxonomía de Bloom</h2>
-      <p class="mt-3 text-slate-600 dark:text-slate-300">
-        El desarrollo de código promueve un **aprendizaje progresivo** al mover al estudiante más allá de la memorización, alcanzando los niveles más altos de la Taxonomía Revisada de Bloom.
-      </p>
-
-      <div class="mt-8 grid md:grid-cols-3 gap-6">
-        <div class="rounded-xl p-5 border border-slate-300/60 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
-          <h3 class="font-semibold text-primary">Niveles Inferiores (Teoría)</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            **Comprender** la Ecuación de Schrödinger. **Aplicar** las fórmulas de recurrencia o las ecuaciones de Roothaan–Hall.
-          </p>
-        </div>
-        <div class="rounded-xl p-5 border border-slate-300/60 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
-          <h3 class="font-semibold text-primary">Niveles Medios (Implementación)</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            **Analizar** la convergencia (SCF) o la precisión (Numerov). **Evaluar** la calidad de los resultados frente a valores exactos.
-          </p>
-        </div>
-        <div class="rounded-xl p-5 border border-slate-300/60 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg">
-          <h3 class="font-semibold text-primary">Nivel Superior (Modificación)</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            **Crear** una nueva implementación o modificar el código para un potencial/base diferente.
-          </p>
-        </div>
-      </div>
-      
-      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="numerov.html" class="w-full sm:w-auto text-center px-6 py-3 rounded-xl bg-primary text-white text-lg font-medium hover:opacity-90 transition-opacity">
-              Método Numerov: Ecuación de Schrödinger
-          </a>
-          <a href="hf.html" class="w-full sm:w-auto text-center px-6 py-3 rounded-xl border border-primary text-primary text-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
-              Método Hartree–Fock: Estructura Electrónica
-          </a>
-      </div>
-    </div>
-  </section>
-
-  ---
-
-  <section id="numerov" class="py-14">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 class="text-2xl md:text-3xl font-semibold">Método Numerov: Ecuación de Schrödinger 1D</h2>
-      <p class="mt-3 text-slate-600 dark:text-slate-300">
-        Implementación para sistemas de una partícula, como el oscilador armónico y el átomo de hidrógeno (radial).
-      </p>
-
-      <div class="mt-8 grid md:grid-cols-2 gap-6">
-        <a href="assets/figs/oscillator_states.png" class="glightbox group">
-          <img src="assets/figs/oscillator_states.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="Estados OA" />
-          <div class="mt-2 text-sm text-slate-500">Estados del oscilador ($\Psi_n$ desplazadas por $E_n$)</div>
-        </a>
-        <a href="assets/figs/hydrogen_radials.png" class="glightbox group">
-          <img src="assets/figs/hydrogen_radials.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="Radiales H" />
-          <div class="mt-2 text-sm text-slate-500">Funciones radiales del hidrógeno</div>
-        </a>
-      </div>
-      
-      <div class="mt-10 text-center">
-         <a href="numerov.html" class="px-6 py-3 rounded-xl bg-primary text-white text-lg font-medium hover:opacity-90">Ver el Código Fuente de Numerov</a>
-      </div>
-
-    </div>
-  </section>
-
-  ---
-  
-  <section id="hf" class="py-14 bg-white/70 dark:bg-slate-900/40">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 class="text-2xl md:text-3xl font-semibold">Hartree–Fock: Estructura Electrónica Molecular</h2>
-      <p class="mt-3 text-slate-600 dark:text-slate-300">
-        Procedimiento de Campo Autoconsistente (SCF) para moléculas diatómicas como H₂ y HeH⁺.
-      </p>
-
-      <div class="mt-8 grid md:grid-cols-3 gap-6">
-        <a href="assets/figs/h2_PEC_HF.png" class="glightbox group md:col-span-2">
-          <img src="assets/figs/h2_PEC_HF.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="PEC H2 HF" />
-          <div class="mt-2 text-sm text-slate-500">Curva de energía potencial (PEC) para H₂</div>
-        </a>
-        <a href="assets/figs/hehp_MO_sigma.png" class="glightbox group">
-          <img src="assets/figs/hehp_MO_sigma.png" class="rounded-xl shadow-md group-hover:opacity-90" alt="MO HeH+" />
-          <div class="mt-2 text-sm text-slate-500">Densidad orbital $\sigma$ en HeH⁺</div>
-        </a>
-      </div>
-
-      <div class="mt-10 grid md:grid-cols-2 gap-6">
-        <div class="rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60">
-          <h3 class="font-semibold">Idea didáctica clave</h3>
-          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Comparar $E_{HF}(R)$ vs. $E_{HF+MP2}(R)$ para discutir el concepto esencial de **correlación electrónica** (Bloom: analizar/evaluar).
-          </p>
-        </div>
-        <div class="rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60">
-          <h3 class="font-semibold">Animación</h3>
-          <video controls class="rounded-xl shadow-md">
-            <source src="assets/anim/osc_superposicion.mp4" type="video/mp4">
-          </video>
-          <p class="mt-2 text-xs text-slate-500">Superposición de estados en “caja” (demo Numerov)</p>
-        </div>
-      </div>
-      
-      <div class="mt-10 text-center">
-         <a href="hf.html" class="px-6 py-3 rounded-xl bg-primary text-white text-lg font-medium hover:opacity-90">Ver el Código Fuente de Hartree–Fock</a>
-      </div>
-
-    </div>
-  </section>
-
-  ---
-
-  <section id="resultados" class="py-14">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 class="text-2xl md:text-3xl font-semibold">Resultados destacados</h2>
-      <ul class="mt-4 grid md:grid-cols-3 gap-6 text-sm">
-        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">Energías del OA con error relativo $< 1e-4$</li>
-        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">PEC de H₂ con mínimo cercano a 0.74 Å (HF)</li>
-        <li class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60">MO $\sigma_g$ / $\sigma_u$ coherentes</li>
-      </ul>
-      <div class="mt-8">
-        <a href="assets/figs/notas.pdf" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">
-          Descargar notas (PDF)
-        </a>
-      </div>
-    </div>
-  </section>
-
-  ---
-
-  <section id="recursos" class="py-14 bg-white/70 dark:bg-slate-900/40">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 class="text-2xl md:text-3xl font-semibold">Recursos</h2>
-      <div class="mt-6 grid md:grid-cols-2 gap-8">
-        <div>
-          <p class="text-slate-600 dark:text-slate-300">
-            Repositorio con código, datos y scripts para reproducibilidad.
-          </p>
-          <div class="mt-4 flex gap-3">
-            <a href="https://github.com/TU_USUARIO/TU_REPO" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">Ver en GitHub</a>
-            <a href="https://TU_USUARIO.github.io/TU_REPO/" class="px-4 py-2 rounded-xl bg-primary text-white hover:opacity-90">Ir al sitio</a>
-          </div>
-        </div>
-        <div class="rounded-2xl p-6 border border-dashed border-slate-300/60 dark:border-slate-700">
-          <p class="text-sm text-slate-500">Pon aquí una imagen del QR que apunte a este sitio</p>
-          <img src="assets/figs/qr_site.png" alt="QR al sitio" class="mt-3 w-40 h-40 object-contain">
-        </div>
-      </div>
-    </div>
-  </section>
-
-  ---
-
-  <footer class="py-10 text-center text-sm text-slate-500">
-    © 2025 Universidad de Sonora — Contacto: tuemail@unison.mx
-  </footer>
+    </section>
+  </main>
 </body>
 </html>
