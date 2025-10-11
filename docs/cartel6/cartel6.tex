@@ -135,17 +135,23 @@ boxshade=plain
 %----------------------------------------------------------------------------------------
 %	TITLE AND AUTHOR NAME
 %----------------------------------------------------------------------------------------
-%
-%\vspace{2em}
+
+% {
+% \centering
+% {\LARGE\bfseries Explorando Sistemas Cuánticos con Python:}\\[0.2em]
+% {\Large\itshape Una guía para el salón de clases}\\[0.6em]
+% {\large Rafael Corella, Bryan Campa, Carlos Félix, Dr. Adrián Duarte}\\[0.2em]
+% {\normalsize\textit{Departamento de Física, Universidad de Sonora}}
+% }
 {
-%\newline
-\Large\sf\bf Explorando Sistemas Cuánticos con Python: Una guía para el salón de clases.} % Poster title
-{Rafael Corella, Bryan Campa, Carlos Felix, Dr. Adrian Duarte\\ % Author names
-%\vspace{1em}
-Universidad de Sonora
-%\vspace{1em}
-} % Author email addresses
-%
+\sf
+\raisebox{-0.5\height}{\includegraphics[width=1.5cm]{logo_unison.png}}\hspace{1em}%
+{\LARGE\bfseries Explorando Sistemas Cuánticos con Python: }%
+{\Large\itshape Una guía para el salón de clases}\\
+{\large Rafael Corella, Bryan Campa, Carlos Félix, Dr. Adrián Duarte}\\
+{\normalsize\textit{Departamento de Física, Universidad de Sonora}}
+}
+
 
 %----------------------------------------------------------------------------------------
 %	INTRODUCTION
@@ -191,10 +197,10 @@ El estudio detallado de estos métodos permite al estudiante conectar la formula
   \captionof{figure}{Rebanada $xz$ de Orbitales Moleculares para H$_2$ y HeH$^+$.}
   \end{center}
 }
-\headerbox{Átomo de Hidrógeno}{name=code1,column=1,below=hf,span=1}{
+\headerbox{Átomo de Hidrógeno, \( L \) Alto}{name=code1,column=1,below=hf,span=1}{
 
 \begin{center}
-\includegraphics[width=\linewidth]{hydrogen_310.png}
+\includegraphics[width=\linewidth]{hydrogen_430.png}
 \end{center}
   
 }
@@ -270,6 +276,10 @@ Formula de recurrencia de Numerov:
 \headerbox{Conclusiones}{name=conc,column=1,below=code1,span=2,bottomaligned=numerov}{
 Comprender un método numérico desde su formulación hasta su implementación es una forma de investigación formativa.
 El proyecto busca que el estudiante no solo use algoritmos, sino que piense como el físico que los concibió.
+
+\vspace{1em}
+
+Este tipo de exploraciones fomenta una comprensión más profunda de la física, al convertir la abstracción matemática en una experiencia tangible.
 }
 
 \headerbox{Repositorio}{name=qr,column=2,below=scf,span=1,bottomaligned=code1}{

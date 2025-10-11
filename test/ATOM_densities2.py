@@ -1,31 +1,14 @@
-import sys
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import PowerNorm
 from scipy.special import sph_harm
+from src.numerov.numerov import solve_atom
 
-# --- Import Numerov hydrogen solver ---
-# Assuming this path setup works for your environment
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-# from numerov.numerov import solve_atom, init_mesh
-
-# --- Placeholders for external functions for demonstration purposes ---
-# You should keep your original import and functions
-def solve_atom(n, l, rmax, mesh):
-    # Placeholder: In a real scenario, this would compute the radial wavefunction
-    # For a simple test, we can return dummy values
-    r_test = np.linspace(1e-6, rmax, mesh)
-    # A simple, non-normalized n=3, l=1, m=0 approximation for testing
-    u_r_test = r_test * (1 - r_test/9) * np.exp(-r_test/3) * np.sin(np.pi * r_test / (rmax * 2))
-    return -1/ (2 * n**2), 10, u_r_test
 def init_mesh(rmax, mesh, Z=1):
-    r = np.linspace(1e-6, rmax, mesh)
+    r = np.linspace(1e-6, rmax, mesh+1)
     x = r # Numerov mesh variable (often log/exponential, but using r here for simplicity)
     dx = r[1] - r[0]
     return x, r, dx
-# --- End of placeholders ---
-
 
 def hydrogen_density_plot(n, l, m, rmax=25.0, plot_rmax=18.0, mesh=1421, npts=600, save_path=None):
     """
@@ -78,14 +61,14 @@ def hydrogen_density_plot(n, l, m, rmax=25.0, plot_rmax=18.0, mesh=1421, npts=60
 
     # --- Plot styling ---
     fig, ax = plt.subplots(figsize=(7, 7), facecolor="black")
-    ax.set_facecolor("black")
+    # ax.set_facecolor("black")
 
     # The extent should now be defined by plot_rmax
     im = ax.imshow(
         density,
         extent=[-plot_rmax, plot_rmax, -plot_rmax, plot_rmax], # <-- **CRITICAL FIX 1: Use plot_rmax**
         origin='lower',
-        cmap="magma",
+        cmap="cividis",
         norm=PowerNorm(0.4),  # **Improved PowerNorm value (0.4) for better contrast**
         # You may also consider `vmax` to clip extreme values if necessary
     )
@@ -116,7 +99,4 @@ def hydrogen_density_plot(n, l, m, rmax=25.0, plot_rmax=18.0, mesh=1421, npts=60
 
     plt.show()
 
-# Example usage:
-# Note: plot_rmax is explicitly set to a larger value (18.0) than the default plot extent
-# of the original script (12.5), and npts is high (600) for a smoother look.
 hydrogen_density_plot(n=3, l=1, m=0, rmax=25, plot_rmax=18.0, mesh=1421, npts=600, save_path="hydrogen_310.png")
