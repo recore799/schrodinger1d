@@ -3,132 +3,118 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Taxonomía de Bloom — Pirámide Interactiva</title>
+<title>Explorando sistemas cuánticos en Python</title>
 <style>
   :root{
     --bg:#0d1117;
     --fg:#e6edf3;
     --accent:#58a6ff;
-    --c6:#e6c4ff; /* Crear */
-    --c5:#ffe08a; /* Evaluar */
-    --c4:#a7e3ff; /* Analizar */
-    --c3:#8ee3e5; /* Aplicar */
-    --c2:#a7d388; /* Comprender */
-    --c1:#f5c1a1; /* Recordar */
+    --c6:#e6c4ff;
+    --c5:#ffe08a;
+    --c4:#a7e3ff;
+    --c3:#8ee3e5;
+    --c2:#a7d388;
+    --c1:#f5c1a1;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
     background:var(--bg); color:var(--fg);
-    display:grid; place-items:center; padding:24px;
+    padding:24px;
   }
-  .wrap{max-width:1100px;width:100%;}
-  header{text-align:center;margin-bottom:18px;}
-  header h1{margin:0 0 6px;font-weight:800;letter-spacing:.2px;color:var(--accent);
-    font-size:clamp(24px,4vw,40px);}
-  header p{margin:0;opacity:.85;font-size:clamp(14px,2vw,18px)}
-  .badge{
-    display:inline-block;padding:.2rem .6rem;border:1px solid #224;
-    border-radius:999px;font-size:.75rem;opacity:.9;margin-top:.4rem
-  }
-  .card{
-    background:#0b1320;border:1px solid #1f2a3a;border-radius:16px;
-    padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);
-  }
-  .pyramid{width:100%;aspect-ratio:16/9;display:block;cursor:pointer;}
-  .meta{margin-top:12px;font-size:.9rem;opacity:.8;text-align:center;}
+  .wrap{max-width:1100px;margin:auto}
+  header{text-align:center;margin-bottom:1rem;}
+  header h1{margin:0;font-size:clamp(24px,4vw,38px);color:var(--accent);}
+  header p{opacity:.9;font-size:1rem;max-width:800px;margin:auto;}
 
-  /* Efecto hover */
-  .level:hover{opacity:0.9;filter:brightness(1.1);}
-  .level text:hover{fill:#fff;}
-  @media (prefers-reduced-motion:no-preference){
-    .level{transition:transform .2s ease,filter .2s ease,opacity .2s ease;}
-    .level:hover{transform:scale(1.02);}
+  section.intro{
+    background:#0b1320;border:1px solid #1f2a3a;border-radius:16px;
+    padding:1.5rem 2rem;margin-bottom:2rem;box-shadow:0 8px 30px rgba(0,0,0,.25);
   }
+  section.intro h2{margin-top:0;color:#9bd3ff;}
+  .card{background:#0b1320;border:1px solid #1f2a3a;border-radius:16px;padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  .pyramid{width:100%;aspect-ratio:16/9;display:block;cursor:pointer;}
+  .level:hover{opacity:0.9;filter:brightness(1.1);}
+  .meta{text-align:center;opacity:.8;margin-top:.5rem;font-size:.9rem;}
 </style>
 </head>
 <body>
   <main class="wrap">
     <header>
-      <h1>Pirámide interactiva — Taxonomía de Bloom</h1>
-      <p>Haz clic en un nivel para explorar recursos asociados.</p>
-      <div class="badge">Crear · Evaluar · Analizar · Aplicar · Comprender · Recordar</div>
+      <h1>Explorando sistemas cuánticos en Python</h1>
+      <p>Una guía para el salón de clases — presentada en el Congreso Nacional de Física.</p>
     </header>
 
+    <section class="intro">
+      <h2>¿Por qué una pirámide?</h2>
+      <p>
+        Este proyecto aplica la <strong>Taxonomía de Bloom</strong> como modelo pedagógico
+        para estructurar el aprendizaje computacional de la mecánica cuántica.  
+        Cada nivel de la pirámide representa un tipo de actividad de aprendizaje:
+      </p>
+      <ul>
+        <li><b>Recordar / Comprender:</b> teoría básica y deducciones del oscilador armónico.</li>
+        <li><b>Aplicar:</b> simulaciones numéricas del método de Numerov.</li>
+        <li><b>Analizar / Evaluar / Crear:</b> uso y extensión de algoritmos tipo Hartree-Fock en Python.</li>
+      </ul>
+      <p>
+        Haz clic en cada nivel de la pirámide para acceder a materiales teóricos,
+        cuadernos interactivos y código experimental.  
+        Todo el contenido está desarrollado con <em>software libre</em> y puede adaptarse
+        para cursos universitarios de física cuántica.
+      </p>
+    </section>
+
+    <!-- existing pyramid section -->
     <section class="card">
-      <svg class="pyramid" viewBox="0 0 1600 900" role="img">
+      <svg class="pyramid" viewBox="0 0 1600 900">
         <defs>
           <clipPath id="clip-tri">
             <polygon points="800,40 1540,860 60,860"/>
           </clipPath>
         </defs>
-
-        <!-- Fondo de pirámide -->
         <polygon points="800,40 1540,860 60,860"
                  fill="#08101c" stroke="#1e2b40" stroke-width="14"/>
 
-        <!-- Cada nivel es un <g> clickable -->
-        <g clip-path="url(#clip-tri)" font-family="system-ui,Segoe UI,Roboto" font-weight="700" text-anchor="middle" fill="#14202e">
-          
-          <!-- Recordar -->
+        <g clip-path="url(#clip-tri)" font-family="system-ui,Segoe UI,Roboto"
+           font-weight="700" text-anchor="middle" fill="#14202e">
+
           <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
             <rect x="0" y="760" width="1600" height="140" fill="var(--c1)"/>
             <text x="800" y="830" font-size="42">Recordar</text>
           </g>
-
-          <!-- Comprender -->
-          <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
+          <g class="level" onclick="go('theory/oscilador.pdf')">
             <rect x="0" y="640" width="1600" height="130" fill="var(--c2)"/>
             <text x="800" y="710" font-size="42">Comprender</text>
           </g>
-
-          <!-- Aplicar -->
-          <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
+          <g class="level" onclick="go('theory/oscilador.pdf')">
             <rect x="0" y="520" width="1600" height="120" fill="var(--c3)"/>
             <text x="800" y="595" font-size="42">Aplicar</text>
           </g>
-
-          <!-- Analizar -->
-          <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
+          <g class="level" onclick="go('theory/oscilador.pdf')">
             <rect x="0" y="400" width="1600" height="120" fill="var(--c4)"/>
             <text x="800" y="475" font-size="42">Analizar</text>
           </g>
-
-          <!-- Evaluar -->
-          <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
+          <g class="level" onclick="go('theory/oscilador.pdf')">
             <rect x="0" y="280" width="1600" height="120" fill="var(--c5)"/>
             <text x="800" y="355" font-size="42">Evaluar</text>
           </g>
-
-          <!-- Crear -->
-          <g class="level" onclick="go('theory/oscilador.pdf')" style="cursor:pointer">
+          <g class="level" onclick="go('theory/oscilador.pdf')">
             <rect x="0" y="160" width="1600" height="120" fill="var(--c6)"/>
             <text x="800" y="235" font-size="42">Crear</text>
           </g>
         </g>
-
-        <!-- Texto lateral -->
-        <g font-family="system-ui,Segoe UI,Roboto" font-size="26" fill="#cdd9e5" opacity=".9">
-          <text x="1020" y="170">Nuevas acciones</text>
-          <text x="1020" y="205">• Planificar y trazar estrategias</text>
-          <text x="1020" y="235">• Integrar y combinar herramientas</text>
-          <text x="1020" y="265">• Diseñar prompts y evaluar sesgos</text>
-        </g>
       </svg>
-
       <div class="meta">
-        Por ahora todos los escalones abren el mismo PDF.  
-        Luego podrás asignar enlaces distintos fácilmente.
+        Todos los niveles abren el mismo PDF de prueba. Próximamente enlazaremos cada uno a su propio recurso.
       </div>
     </section>
   </main>
 
   <script>
-    // Redirigir con animación suave
-    function go(url){
-      window.open(url, "_blank");
-    }
+    function go(url){ window.open(url, "_blank"); }
   </script>
 </body>
 </html>
