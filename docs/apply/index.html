@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Crear — Extensión y experimentación</title>
+<title>Aplicar — Visualización y experimentos</title>
 <style>
 :root{
   --bg:#0d1117;
@@ -62,96 +62,135 @@ footer{
   margin-top:2rem;
   font-size:.9rem;
 }
+img{
+  display:block;
+  margin:1rem auto;
+  max-width:90%;
+  border-radius:8px;
+}
 </style>
 </head>
 <body>
 
 <button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
 
-<h1>Crear — Extensión y experimentación</h1>
+<h1>Aplicar — Visualización y experimentos</h1>
 
 <section>
   <p>
-    En la etapa de <strong>Crear</strong> el estudiante o investigador deja de ser un usuario
-    del código para convertirse en su <em>autor</em>. Aquí se integran los conocimientos adquiridos
-    durante las etapas previas y se utilizan para extender o modificar la librería, probando
-    nuevas ideas y algoritmos.
+    En la etapa de <strong>Aplicar</strong>, los conocimientos adquiridos se utilizan
+    de manera práctica: es el punto donde las ideas se transforman en resultados visibles.
+    Aquí el estudiante ejecuta los métodos, ajusta parámetros y genera datos para
+    observar la conexión entre teoría y experiencia numérica.
   </p>
 
   <blockquote>
-    Crear es transformar la comprensión en acción. Cada nueva línea de código es un
-    experimento, una hipótesis puesta a prueba.
+    Aplicar es hacer operativa la comprensión: usar lo aprendido para resolver,
+    modelar o visualizar un fenómeno físico.
   </blockquote>
 
   <p>
-    Este proyecto está pensado para ser libre y extensible. Puedes descargar o clonar
-    el repositorio en GitHub:
-  </p>
-
-  <pre><code>git clone https://github.com/recore799/schrodinger1d.git
-cd schrodinger1d
-</code></pre>
-
-  <p>
-    Si deseas colaborar oficialmente, solicita acceso o realiza un <em>fork</em> de la
-    versión pública. Las contribuciones pueden centrarse en mejorar la eficiencia del
-    algoritmo, ampliar la base de orbitales o añadir nuevos ejemplos visuales.
+    Los ejemplos siguientes muestran cómo utilizar las rutinas del proyecto para
+    representar funciones de onda, densidades electrónicas y comportamientos de
+    sistemas cuánticos simples.
   </p>
 </section>
 
 <section>
-  <h2>Ejemplos de creación</h2>
+  <h2>Ejemplo 1 — Funciones de onda del oscilador armónico</h2>
 
   <p>
-    A continuación se muestran fragmentos de código extraídos de los scripts de
-    <code>examples/</code>. Cada uno ilustra cómo generar nuevas visualizaciones o
-    extender los modelos existentes.
+    Se visualizan los estados estacionarios calculados con el método de Numerov,
+    mostrando las densidades de probabilidad para distintos niveles cuánticos.
   </p>
 
-  <h3>1. Visualizar funciones de onda del oscilador armónico</h3>
   <pre><code>import numpy as np
 import matplotlib.pyplot as plt
 from src.numerov.numerov import solve_oscillator
 
-n = 3  # Nivel de energía
-x, psi = solve_oscillator(n)
+levels = [0, 1, 2, 3]
+for n in levels:
+    x, psi = solve_oscillator(n)
+    plt.plot(x, psi**2, label=f"n = {n}")
 
-plt.plot(x, psi**2)
-plt.title(f"Densidad de probabilidad para n={n}")
+plt.title("Densidad de probabilidad |ψ(x)|² del oscilador armónico")
 plt.xlabel("x")
 plt.ylabel("|ψ|²")
-plt.show()</code></pre>
+plt.legend()
+plt.show()
+</code></pre>
+  <img src="../figures/example_oscillator.png" alt="Ejemplo de densidad de probabilidad del oscilador armónico">
+</section>
 
-  <h3>2. Modificar el potencial en el átomo de hidrógeno</h3>
+<section>
+  <h2>Ejemplo 2 — Densidad electrónica del átomo de hidrógeno</h2>
+
+  <p>
+    A partir de las funciones radiales \(R_{nl}(r)\), se obtiene la densidad
+    \(\rho(r) = |R_{nl}(r)|^2 r^2\) para distintos estados del átomo de hidrógeno.
+  </p>
+
   <pre><code>from src.numerov.numerov import solve_atom
+import matplotlib.pyplot as plt
+import numpy as np
 
-Z = 1
-def potential(r):
-    return -Z / r + 0.05 * r  # Pequeña perturbación lineal
+states = [(1,0), (2,0), (2,1)]
+for n, l in states:
+    r, psi = solve_atom(n=n, l=l)
+    rho = psi**2 * r**2
+    plt.plot(r, rho, label=f"n={n}, l={l}")
 
-r, psi = solve_atom(n=2, l=0, potential=potential)
-plt.plot(r, psi)
-plt.title("Estado perturbado del átomo de hidrógeno")
+plt.title("Densidad radial del átomo de hidrógeno")
+plt.xlabel("r [a.u.]")
+plt.ylabel("ρ(r)")
+plt.legend()
+plt.show()
+</code></pre>
+  <img src="../figures/example_hydrogen.png" alt="Ejemplo de densidad radial del átomo de hidrógeno">
+</section>
+
+<section>
+  <h2>Ejemplo 3 — Mapa 2D de densidad cuántica</h2>
+
+  <p>
+    Se genera un mapa bidimensional de la densidad de probabilidad para un estado
+    del átomo de hidrógeno, combinando las soluciones radiales y armónicos esféricos.
+  </p>
+
+  <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import sph_harm
+from src.numerov.numerov import solve_atom
+
+n, l, m = 3, 1, 0
+r, psi = solve_atom(n, l)
+
+# Construir grilla 2D
+theta = np.linspace(0, np.pi, 300)
+phi = np.linspace(0, 2*np.pi, 300)
+R, PHI = np.meshgrid(r, phi)
+THETA = np.linspace(0, np.pi, len(r))
+Ylm = sph_harm(m, l, 0, THETA)
+density = (abs(psi[:, None] * Ylm)**2).T
+
+plt.imshow(density, extent=[0, max(r), 0, np.pi],
+           aspect='auto', origin='lower', cmap='plasma')
 plt.xlabel("r")
-plt.ylabel("ψ(r)")
-plt.show()</code></pre>
-
-  <h3>3. Extender el módulo de Hartree–Fock</h3>
-  <pre><code># Ejemplo de nuevo módulo de integrales p-type (en desarrollo)
-from src.integrals import compute_two_electron
-
-def p_integral(mu, nu, lam, sig):
-    # Implementación tentativa de integrales p-GTO
-    return compute_two_electron(mu, nu, lam, sig, angular_momentum='p')</code></pre>
+plt.ylabel("θ")
+plt.title(f"Densidad cuántica para (n={n}, l={l}, m={m})")
+plt.colorbar(label="|ψ|²")
+plt.show()
+</code></pre>
+  <img src="../figures/example_density.png" alt="Mapa 2D de densidad cuántica">
 </section>
 
 <section>
   <h2>Objetivos de la etapa</h2>
   <ul>
-    <li>Aprender a modificar y extender la base de código existente.</li>
-    <li>Explorar el impacto físico de los cambios en los potenciales o integrales.</li>
-    <li>Generar nuevas visualizaciones y compararlas con resultados teóricos.</li>
-    <li>Desarrollar una comprensión práctica del proceso de investigación computacional.</li>
+    <li>Ejecutar y verificar los algoritmos desarrollados en etapas previas.</li>
+    <li>Interpretar los resultados numéricos en términos físicos.</li>
+    <li>Generar representaciones gráficas de funciones de onda y densidades.</li>
+    <li>Comparar resultados con predicciones analíticas o experimentales.</li>
   </ul>
 </section>
 
