@@ -1,6 +1,7 @@
 % Created 2025-04-20 Sun 17:29
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
+\usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
@@ -11,21 +12,37 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{capt-of}
-\usepackage{hyperref}
 \usepackage{physics}
 \usepackage{bm}
 \usepackage{geometry}
 \geometry{a4paper, margin=1in}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{microtype}
+\usepackage{lmodern}
+\usepackage{parskip}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  urlcolor=blue!70!black
+}
+
 \author{Rafael Corella, Carlos Felix, Bryan Campa}
 \date{\today}
+
+
 
 \begin{document}
 
 
 \section{Oscilador Harmonico}
-\label{sec:orgfbc7872}
+
+\begin{abstract}
+En este apartado recordamos el desarrollo teórico del oscilador armónico
+cuántico, que constituye el modelo base para sistemas confinados y sirve
+como punto de partida para métodos numéricos como el de Numerov.
+\end{abstract}
 
 Al aplicar el metodo de separacion de variables la ecuacion de Schrodinger se obtiene la ecuacion de Schrodinger unidimensional para una funcion \(\psi = \psi(x)\)
 
@@ -36,7 +53,7 @@ Al aplicar el metodo de separacion de variables la ecuacion de Schrodinger se ob
 
 Un sistema de oscilador armonico es cuando el potencial en la ecuacion (\ref{eq:schr1}) es
 
-\[ V(x) = - \frac{1}{2}K x^2. \]
+\[ V(x) = \frac{1}{2}K x^2. \]
 donde \(K\) es una constante.
 
 El desarrollo se simplifica en gran medida al hacer el cambio a unidades adimensionales:

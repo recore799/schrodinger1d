@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recordar — Fundamentos Teóricos</title>
+<style>
+body{
+  background:#0d1117;
+  color:#e6edf3;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  margin:0;
+  padding:2rem;
+}
+h1{
+  color:#58a6ff;
+  text-align:center;
+}
+p.intro{
+  max-width:700px;
+  margin:auto;
+  text-align:center;
+  opacity:.9;
+}
+.grid{
+  display:grid;
+  gap:1.2rem;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  margin-top:2rem;
+}
+.card{
+  background:#0b1320;
+  border:1px solid #1f2a3a;
+  border-radius:14px;
+  padding:1.2rem;
+  text-align:center;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+  transition:transform .2s, filter .2s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  filter:brightness(1.1);
+}
+.card a{
+  display:block;
+  color:#58a6ff;
+  font-weight:600;
+  text-decoration:none;
+  font-size:1.05rem;
+}
+.card a:hover{text-decoration:underline;}
+.back{
+  display:inline-block;
+  margin-top:2rem;
+  text-align:center;
+  color:#ccc;
+}
+.back a{
+  color:#9bd3ff;
+  text-decoration:none;
+}
+.back a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+  <h1>Recordar — Fundamentos teóricos</h1>
+  <p class="intro">
+    En este nivel revisamos los modelos y ecuaciones fundamentales de la mecánica cuántica.
+    Selecciona un tema para abrir su desarrollo teórico:
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <a href="oscilador.pdf" target="_blank">Oscilador armónico cuántico</a>
+    </div>
+    <div class="card">
+      <a href="hidrogeno.pdf" target="_blank">Átomo de hidrógeno</a>
+    </div>
+    <div class="card">
+      <a href="numerov.pdf" target="_blank">Método de Numerov</a>
+    </div>
+    <div class="card">
+      <a href="hartree_fock.pdf" target="_blank">Método de Hartree–Fock</a>
+    </div>
+  </div>
+
+  <div class="back">
+    <a href="../index.html">← Volver a la pirámide</a>
+  </div>
+</body>
+</html>
