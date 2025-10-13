@@ -5,87 +5,134 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Recordar — Fundamentos Teóricos</title>
 <style>
-body{
-  background:#0d1117;
-  color:#e6edf3;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
-  margin:0;
-  padding:2rem;
-}
-h1{
-  color:#58a6ff;
-  text-align:center;
-}
-p.intro{
-  max-width:700px;
-  margin:auto;
-  text-align:center;
-  opacity:.9;
-}
-.grid{
-  display:grid;
-  gap:1.2rem;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  margin-top:2rem;
-}
-.card{
-  background:#0b1320;
-  border:1px solid #1f2a3a;
-  border-radius:14px;
-  padding:1.2rem;
-  text-align:center;
-  box-shadow:0 6px 20px rgba(0,0,0,.3);
-  transition:transform .2s, filter .2s;
-}
-.card:hover{
-  transform:translateY(-3px);
-  filter:brightness(1.1);
-}
-.card a{
-  display:block;
-  color:#58a6ff;
-  font-weight:600;
-  text-decoration:none;
-  font-size:1.05rem;
-}
-.card a:hover{text-decoration:underline;}
-.back{
-  display:inline-block;
-  margin-top:2rem;
-  text-align:center;
-  color:#ccc;
-}
-.back a{
-  color:#9bd3ff;
-  text-decoration:none;
-}
-.back a:hover{text-decoration:underline;}
+  :root{
+    --bg:#0d1117;
+    --fg:#e6edf3;
+    --accent:#58a6ff;
+  }
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+    margin:0;
+    padding:2rem;
+  }
+  h1{
+    color:var(--accent);
+    text-align:center;
+  }
+  p.intro{
+    max-width:700px;
+    margin:auto;
+    text-align:center;
+    opacity:.9;
+  }
+  .grid{
+    display:grid;
+    gap:1.2rem;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    margin-top:2rem;
+  }
+  .card{
+    background:#0b1320;
+    border:1px solid #1f2a3a;
+    border-radius:14px;
+    padding:1.2rem;
+    text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.3);
+    transition:transform .2s, filter .2s;
+    cursor:pointer;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    filter:brightness(1.1);
+  }
+  .card span{
+    display:block;
+    color:#58a6ff;
+    font-weight:600;
+    font-size:1.05rem;
+  }
+  #pdf-viewer{
+    width:100%;
+    height:85vh;
+    border:none;
+    border-radius:12px;
+    margin-top:1rem;
+  }
+  #menu-section,#viewer-section{max-width:1100px;margin:auto;}
+  button.back{
+    display:inline-block;
+    margin-top:1rem;
+    padding:.6rem 1.2rem;
+    background:var(--accent);
+    color:#fff;
+    font-weight:600;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  button.back:hover{background:#4490e6;}
+  .back-main{
+    text-align:center;
+    margin-top:2rem;
+  }
+  .back-main a{
+    color:#9bd3ff;
+    text-decoration:none;
+  }
+  .back-main a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
-  <h1>Recordar — Fundamentos teóricos</h1>
-  <p class="intro">
-    En este nivel revisamos los modelos y ecuaciones fundamentales de la mecánica cuántica.
-    Selecciona un tema para abrir su desarrollo teórico:
-  </p>
 
-  <div class="grid">
-    <div class="card">
-      <a href="oscilador.pdf" target="_blank">Oscilador armónico cuántico</a>
-    </div>
-    <div class="card">
-      <a href="hidrogeno.pdf" target="_blank">Átomo de hidrógeno</a>
-    </div>
-    <div class="card">
-      <a href="numerov.pdf" target="_blank">Método de Numerov</a>
-    </div>
-    <div class="card">
-      <a href="hartree_fock.pdf" target="_blank">Método de Hartree–Fock</a>
-    </div>
-  </div>
+  <section id="menu-section">
+    <h1>Recordar — Fundamentos teóricos</h1>
+    <p class="intro">
+      En este nivel revisamos los modelos y ecuaciones fundamentales de la mecánica cuántica.
+      Selecciona un tema para abrir su desarrollo teórico:
+    </p>
 
-  <div class="back">
-    <a href="../index.html">← Volver a la pirámide</a>
-  </div>
+    <div class="grid">
+      <div class="card" onclick="showPDF('oscilador.pdf')">
+        <span>Oscilador armónico cuántico</span>
+      </div>
+      <div class="card" onclick="showPDF('hidrogeno.pdf')">
+        <span>Átomo de hidrógeno</span>
+      </div>
+      <div class="card" onclick="showPDF('numerov.pdf')">
+        <span>Método de Numerov</span>
+      </div>
+      <div class="card" onclick="showPDF('hartree_fock.pdf')">
+        <span>Método de Hartree–Fock</span>
+      </div>
+    </div>
+
+    <div class="back-main">
+      <a href="../index.html">← Volver a la pirámide</a>
+    </div>
+  </section>
+
+  <!-- PDF viewer -->
+  <section id="viewer-section" style="display:none;text-align:center;">
+    <button class="back" onclick="goBack()">← Volver al menú</button>
+    <embed id="pdf-viewer" type="application/pdf" src="">
+  </section>
+
+  <script>
+    function showPDF(path){
+      document.getElementById('menu-section').style.display='none';
+      document.getElementById('viewer-section').style.display='block';
+      document.getElementById('pdf-viewer').src = path;
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function goBack(){
+      document.getElementById('viewer-section').style.display='none';
+      document.getElementById('menu-section').style.display='block';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  </script>
+
 </body>
 </html>
