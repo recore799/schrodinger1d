@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evaluar — Documentación y revisión crítica</title>
+<style>
+:root{
+  --bg:#0d1117;
+  --fg:#e6edf3;
+  --accent:#58a6ff;
+}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  margin:0;
+  padding:2rem;
+  line-height:1.6;
+}
+h1,h2{color:var(--accent);}
+h1{text-align:center;margin-bottom:1rem;}
+p,li{max-width:850px;}
+button.back{
+  display:inline-block;
+  margin-bottom:1rem;
+  padding:.6rem 1.2rem;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:background .2s;
+}
+button.back:hover{background:#4490e6;}
+ul{max-width:850px;margin:auto;}
+a{
+  color:#9bd3ff;
+  text-decoration:none;
+  font-weight:600;
+}
+a:hover{text-decoration:underline;}
+blockquote{
+  border-left:3px solid var(--accent);
+  padding-left:1rem;
+  margin:auto;
+  max-width:800px;
+  font-style:italic;
+  color:#c0d4f0;
+}
+footer{
+  text-align:center;
+  opacity:.7;
+  margin-top:2rem;
+  font-size:.9rem;
+}
+.pdf-menu{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  align-items:flex-start;
+  max-width:850px;
+  margin:auto;
+  margin-top:1.5rem;
+}
+.pdf-link{
+  display:inline-block;
+  background:#1c2636;
+  border:1px solid #2d3d52;
+  border-radius:8px;
+  padding:.8rem 1.2rem;
+  width:100%;
+  transition:background .2s,border .2s;
+}
+.pdf-link:hover{
+  background:#253348;
+  border-color:var(--accent);
+}
+</style>
+</head>
+<body>
+
+<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+
+<h1>Evaluar — Documentación y revisión crítica</h1>
+
+<section>
+  <p>
+    En la etapa de <strong>Evaluar</strong> se examina críticamente la calidad,
+    coherencia y eficiencia de los métodos implementados. Este nivel implica
+    no sólo comprender y aplicar, sino también <em>juzgar</em> y <em>defender</em>
+    las decisiones tomadas durante el desarrollo del código.
+  </p>
+
+  <blockquote>
+    Evaluar es comprender al nivel de la estructura: cuestionar las suposiciones,
+    justificar las elecciones y medir el impacto de cada aproximación.
+  </blockquote>
+
+  <p>
+    Aquí se reúnen los documentos técnicos que explican de forma exhaustiva
+    la implementación del método de Numerov y del algoritmo de Hartree–Fock.
+    Cada uno analiza los fundamentos físicos, las decisiones de diseño y
+    las estrategias numéricas utilizadas.
+  </p>
+</section>
+
+<section>
+  <h2>Documentación disponible</h2>
+  <p>
+    Cada guía puede visualizarse directamente en esta página o descargarse
+    para una lectura detallada.
+  </p>
+
+  <div class="pdf-menu">
+    <a class="pdf-link" href="docs/evaluation/numerov_doc.pdf" target="_blank">
+      📘 <strong>Guía completa del método de Numerov</strong><br>
+      <small>Explicación detallada línea por línea del código, análisis físico
+      del mallado logarítmico y discusión de la estabilidad numérica.</small>
+    </a>
+
+    <a class="pdf-link" href="docs/evaluation/hartreefock_doc.pdf" target="_blank">
+      📗 <strong>Guía del algoritmo de Hartree–Fock</strong><br>
+      <small>Revisión crítica del esquema SCF, uso de la base STO-3G y análisis
+      del comportamiento de convergencia.</small>
+    </a>
+
+    <a class="pdf-link" href="docs/evaluation/comparative_notes.pdf" target="_blank">
+      📙 <strong>Notas comparativas y validación</strong><br>
+      <small>Comparación entre resultados analíticos y numéricos, discusión
+      sobre precisión, errores sistemáticos y límites del modelo.</small>
+    </a>
+  </div>
+</section>
+
+<section>
+  <h2>Objetivo de esta etapa</h2>
+  <ul>
+    <li>Identificar fortalezas y debilidades en la implementación de los métodos.</li>
+    <li>Evaluar la estabilidad numérica y el costo computacional de cada enfoque.</li>
+    <li>Cuantificar errores y discutir su origen físico o matemático.</li>
+    <li>Proponer mejoras o líneas de investigación futura.</li>
+  </ul>
+</section>
+
+<footer>
+  Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
+</footer>
+
+</body>
+</html>
