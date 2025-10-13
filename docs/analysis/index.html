@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analizar — Descomposición y estructura</title>
+<style>
+:root{
+  --bg:#0d1117;
+  --fg:#e6edf3;
+  --accent:#58a6ff;
+}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  margin:0;
+  padding:2rem;
+  line-height:1.6;
+}
+h1,h2{color:var(--accent);}
+h1{text-align:center;margin-bottom:1rem;}
+p,li{max-width:850px;}
+button.back{
+  display:inline-block;
+  margin-bottom:1rem;
+  padding:.6rem 1.2rem;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:background .2s;
+}
+button.back:hover{background:#4490e6;}
+ul{max-width:850px;margin:auto;}
+pre,code{
+  background:#0b1320;
+  border:1px solid #1f2a3a;
+  border-radius:6px;
+  color:#9bd3ff;
+}
+pre{padding:.8rem;overflow-x:auto;}
+blockquote{
+  border-left:3px solid var(--accent);
+  padding-left:1rem;
+  margin:auto;
+  max-width:800px;
+  font-style:italic;
+  color:#c0d4f0;
+}
+footer{
+  text-align:center;
+  opacity:.7;
+  margin-top:2rem;
+  font-size:.9rem;
+}
+</style>
+</head>
+<body>
+
+<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+
+<h1>Analizar — Descomposición y estructura</h1>
+
+<section>
+  <p>
+    En la etapa de <strong>Analizar</strong> se descompone el conocimiento adquirido
+    para entender la estructura interna de los modelos y algoritmos utilizados.
+    Aquí el estudiante examina las aproximaciones, dependencias y límites de
+    los métodos aplicados en mecánica cuántica computacional.
+  </p>
+
+  <blockquote>
+    Analizar es ver debajo de la superficie de la teoría: reconocer qué
+    supuestos hacen posible un modelo y cómo esos supuestos determinan
+    su alcance.
+  </blockquote>
+
+  <p>
+    En esta sección se estudian componentes críticos como las bases atómicas
+    (por ejemplo, la base STO-3G), la estabilidad del algoritmo de
+    Hartree–Fock y el impacto de las aproximaciones numéricas.
+  </p>
+</section>
+
+<section>
+  <h2>Descomposición de la base STO-3G</h2>
+  <p>
+    La base <strong>STO-3G</strong> (<em>Slater-Type Orbital con 3 Gaussianas</em>)
+    es una de las aproximaciones más empleadas para representar funciones de
+    tipo Slater mediante combinaciones de gaussianas normalizadas.
+    Su función objetivo es reproducir el decaimiento exponencial
+    de los orbitales atómicos con una forma que permita evaluar las integrales
+    analíticamente.
+  </p>
+
+  <pre><code>
+φ_STO-3G(r) = c₁ e^{-α₁ r²} + c₂ e^{-α₂ r²} + c₃ e^{-α₃ r²}
+  </code></pre>
+
+  <p>
+    Los coeficientes \(c_i\) y exponentes \(α_i\) se ajustan para aproximar
+    la función de tipo Slater \(ψ(r) = N e^{-\zeta r}\).
+    Cada orbital atómico (por ejemplo, 1s, 2p) se representa por una
+    combinación lineal de tres gaussianas denominadas
+    <em>primitivas</em>. La función resultante se denomina
+    <em>contracción</em>.
+  </p>
+
+  <ul>
+    <li>Cada función base tiene tres primitivas gaussianas con pesos \(c_i\).</li>
+    <li>Es una <strong>base mínima</strong>: una función por orbital ocupado.</li>
+    <li>Las integrales de dos electrones se pueden calcular de forma analítica,
+        lo que hace al método de Hartree–Fock computacionalmente viable.</li>
+  </ul>
+
+  <p>
+    El uso de funciones gaussianas en lugar de funciones Slater introduce una
+    aproximación controlada. Aunque las funciones gaussianas no reproducen
+    correctamente el comportamiento cuspado en el núcleo, su eficiencia en las
+    integrales compensa esta limitación en cálculos de pequeño y mediano tamaño.
+  </p>
+
+  <blockquote>
+    Analizar la construcción de la base STO-3G permite entender el equilibrio
+    entre precisión física y viabilidad computacional.
+  </blockquote>
+</section>
+
+<section>
+  <h2>Dependencia del método de Hartree–Fock con la base</h2>
+  <p>
+    Las propiedades y energías obtenidas mediante Hartree–Fock dependen
+    fuertemente de la base elegida. A medida que se amplía el conjunto de
+    funciones (por ejemplo, 6-31G o cc-pVDZ), las soluciones se acercan al
+    límite de Hartree–Fock.
+  </p>
+  <ul>
+    <li>El tamaño de la base define la dimensionalidad del problema matricial
+        \(FC = SC\epsilon\).</li>
+    <li>La elección de la base influye en la convergencia y estabilidad del
+        procedimiento SCF.</li>
+    <li>Analizar diferentes bases permite estimar el error de truncamiento del
+        espacio de Hilbert aproximado.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Preguntas guía</h2>
+  <ul>
+    <li>¿Qué efecto tendría duplicar el número de gaussianas en la base?</li>
+    <li>¿Cómo cambia la energía total al usar una base extendida?</li>
+    <li>¿En qué medida la base STO-3G limita la descripción de los orbitales
+        <em>p</em> y <em>d</em>?</li>
+  </ul>
+</section>
+
+<footer>
+  Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
+</footer>
+
+</body>
+</html>
