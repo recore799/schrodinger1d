@@ -1,39 +1,168 @@
-% Created 2025-04-20 Sun 17:29
-% Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
-\usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
 \usepackage[T1]{fontenc}
-\usepackage{graphicx}
-\usepackage{longtable}
-\usepackage{wrapfig}
-\usepackage{rotating}
-\usepackage[normalem]{ulem}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{capt-of}
-\usepackage{physics}
-\usepackage{bm}
+\usepackage{amsmath,amssymb,bm,physics}
 \usepackage{geometry}
-\geometry{a4paper, margin=1in}
 \usepackage{hyperref}
-\usepackage{listings}
-\usepackage{microtype}
-\usepackage{lmodern}
-\usepackage{parskip}
-\usepackage{xcolor}
-\hypersetup{
-  colorlinks=true,
-  linkcolor=blue!70!black,
-  urlcolor=blue!70!black
-}
-
-\author{Rafael Corella, Carlos Felix, Bryan Campa}
-\date{\today}
-
-
+\geometry{a4paper,margin=1in}
+\date{}
+\title{El átomo de hidrógeno}
 
 \begin{document}
+\maketitle
+
+\begin{abstract}
+En este apartado recordamos el desarrollo teórico del átomo de hidrógeno como ejemplo fundamental de un sistema cuántico bajo un potencial central. Se repasan los conceptos de separación de variables en coordenadas esféricas, la ecuación radial de Schrödinger y la introducción de la función radial reducida. Se presentan las soluciones analíticas para el potencial de Coulomb, las expresiones de las energías 
+
+\[ E_n = - Ry \frac{Z^2}{n^2} \]
+
+y las funciones radiales 
+
+\[ R_{nl}(r) \]
+
+en términos de polinomios de Laguerre asociados. Este modelo constituye la base para el estudio de la estructura atómica y sirve como punto de partida para métodos numéricos más avanzados, como el de Numerov o el de Hartree–Fock.
+\end{abstract}
+
+\section{Ecuación de Schrödinger para potenciales centrales}
+\label{sec:central}
+
+Consideremos una partícula de masa \( m \) bajo un potencial que sólo depende
+de la distancia al origen \( r \):
+\[
+H = -\frac{\hbar^2}{2m}\nabla^2 + V(r).
+\]
+En coordenadas esféricas \((r,\theta,\phi)\), el operador Laplaciano es
+\[
+\nabla^2 = \frac{1}{r^2}\pdv{r}\!\left(r^2 \pdv{r}\right)
++ \frac{1}{r^2\sin\theta}\pdv{\theta}\!\left(\sin\theta\,\pdv{\theta}\right)
++ \frac{1}{r^2\sin^2\theta}\pdv[2]{\phi}.
+\]
+
+La ecuación de Schrödinger dependiente del tiempo,
+\[
+H\psi = E\psi,
+\]
+se separa en coordenadas esféricas usando
+\(\psi(r,\theta,\phi)=R(r)Y_{\ell m}(\theta,\phi)\).
+Los armónicos esféricos \(Y_{\ell m}\) satisfacen
+\[
+L^2 Y_{\ell m} = \hbar^2 \ell(\ell+1)Y_{\ell m}, \qquad
+L_z Y_{\ell m} = m\hbar Y_{\ell m}.
+\]
+
+\section{Ecuación radial}
+\label{sec:radial}
+
+Sustituyendo la forma separada en la ecuación de Schrödinger se obtiene:
+\begin{equation}
+-\frac{\hbar^2}{2m}\left[\frac{1}{r^2}\dv{}{r}\!\left(r^2\dv{R}{r}\right)
+-\frac{\ell(\ell+1)}{r^2}R\right] + V(r)R = ER.
+\label{eq:radial}
+\end{equation}
+
+Definimos la \textbf{función radial reducida}
+\[
+\chi(r) = rR(r),
+\]
+para la cual la ecuación anterior toma la forma unidimensional:
+\begin{equation}
+-\frac{\hbar^2}{2m}\dv[2]{\chi}{r}
++ \left[V(r)+\frac{\hbar^2\ell(\ell+1)}{2mr^2}\right]\chi(r)=E\chi(r).
+\label{eq:radial-chi}
+\end{equation}
+El término centrífugo actúa como una barrera efectiva:
+\[
+V_{\text{ef}}(r) = V(r) + \frac{\hbar^2\ell(\ell+1)}{2mr^2}.
+\]
+
+La probabilidad de encontrar la partícula entre \(r\) y \(r+\dd r\) es
+\[
+p(r)\dd r = |\chi_{n\ell}(r)|^2\dd r,
+\]
+por lo que \(|\chi|^2\) puede interpretarse directamente como densidad de probabilidad radial.
+
+\section{Potencial de Coulomb}
+\label{sec:coulomb}
+
+En el caso del átomo de hidrógeno (número atómico \(Z=1\)), el potencial es
+\[
+V(r) = -\frac{Ze^2}{4\pi\varepsilon_0}\frac{1}{r}.
+\]
+En unidades atómicas (\(\hbar = m_e = e = 4\pi\varepsilon_0 = 1\)) simplemente:
+\[
+V(r) = -\frac{Z}{r}.
+\]
+
+La ecuación radial \eqref{eq:radial-chi} admite soluciones ligadas si \(E<0\),
+con energías discretas
+\begin{equation}
+E_n = -\frac{m_e e^4}{2(4\pi\varepsilon_0)^2\hbar^2}\frac{Z^2}{n^2}
+= -\mathrm{Ry}\,\frac{Z^2}{n^2},
+\label{eq:energy}
+\end{equation}
+donde \(\mathrm{Ry}=13.6\,\text{eV}\) es la energía de Rydberg.
+
+\section{Funciones radiales}
+\label{sec:radial-funcs}
+
+Las soluciones normalizadas tienen la forma:
+\begin{equation}
+R_{n\ell}(r) =
+\frac{2}{n a_0}
+\sqrt{\frac{(n-\ell-1)!}{2n[(n+\ell)!]}}
+\left(\frac{2Zr}{n a_0}\right)^\ell
+e^{-Zr/(n a_0)}
+L^{2\ell+1}_{n-\ell-1}\!\left(\frac{2Zr}{n a_0}\right),
+\label{eq:Rnl}
+\end{equation}
+donde \(L^{2\ell+1}_{n-\ell-1}\) son polinomios de Laguerre asociados y
+\(a_0=\frac{4\pi\varepsilon_0\hbar^2}{m_e e^2}\) es el radio de Bohr.
+
+\paragraph{Propiedades.}
+\begin{itemize}
+\item Energía \(E_n\) depende sólo de \(n\): degeneración \(n^2\) (sin espín).
+\item Nodos radiales: \(n_r = n - \ell - 1\).
+\item Paridad angular: \(Y_{\ell m}\) tiene paridad \((-1)^\ell\).
+\end{itemize}
+
+\section{Estados bajos}
+\label{sec:low-states}
+
+\begin{align*}
+R_{10}(r) &= 2\left(\frac{Z}{a_0}\right)^{3/2} e^{-Zr/a_0}, \\
+R_{21}(r) &= \frac{1}{2\sqrt{6}}\left(\frac{Z}{a_0}\right)^{3/2}
+\left(\frac{Zr}{a_0}\right)e^{-Zr/2a_0}.
+\end{align*}
+
+La función de onda completa del estado base (\(n=1,\ell=0,m=0\)) es:
+\[
+\psi_{100}(r,\theta,\phi)
+= \frac{Z^{3/2}}{\sqrt{\pi}a_0^{3/2}}\,e^{-Zr/a_0}.
+\]
+
+\section{Interpretación física}
+\label{sec:interpretacion}
+
+El término centrífugo \(\propto 1/r^2\) empuja las funciones de onda con
+\(\ell>0\) lejos del núcleo. El tamaño característico de la función de onda
+crece como
+\[
+\langle r\rangle \sim \frac{n^2 a_0}{Z},
+\]
+lo que explica la jerarquía de tamaños atómicos.  
+
+La forma radial de las soluciones explica la estructura de los orbitales \(s,p,d,f\)
+y el origen de las líneas espectrales del hidrógeno.
+
+\section*{Resumen (Recordar)}
+\begin{itemize}
+\item La ecuación de Schrödinger radial describe la dinámica efectiva bajo \(V_{\text{ef}}\).
+\item Para el potencial de Coulomb: \(E_n = -\mathrm{Ry}\,Z^2/n^2\).
+\item Las soluciones radiales involucran polinomios de Laguerre.
+\item Las energías dependen sólo de \(n\) y poseen degeneración \(n^2\).
+\end{itemize}
+
 
 
 \end{document}

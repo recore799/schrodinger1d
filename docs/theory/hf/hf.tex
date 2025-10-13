@@ -1,0 +1,194 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,bm,physics}
+\usepackage{geometry}
+\usepackage{hyperref}
+\geometry{a4paper,margin=1in}
+\date{}
+\title{Método de Hartree-Fock}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+En este apartado recordamos la formulación matricial de las ecuaciones de Hartree–Fock para sistemas moleculares, conocidas como ecuaciones de Roothaan–Hall. Se presentan las expresiones de la matriz de densidad, de Fock y el procedimiento de autoconsistencia (SCF) utilizado para resolverlas. Este desarrollo constituye la base formal para la implementación computacional del método Hartree–Fock en una base finita de orbitales.
+\end{abstract}
+
+\section{Derivación de las ecuaciones de Hartree–Fock}
+\label{sec:hf-derivation}
+
+% Espacio reservado para la deducción variacional de las ecuaciones HF
+\vspace{6cm}
+% (Aquí incluirás la derivación de las ecuaciones de Hartree–Fock
+% a partir del principio variacional y del determinante de Slater.)
+
+\section{Ecuaciones de Roothaan–Hall}
+\label{sec:roothaan}
+
+Una vez que el espín se ha integrado, las ecuaciones de Hartree–Fock en forma espacial son
+\[
+f(1)\psi_i(1) = \epsilon_i\,\psi_i(1),
+\]
+donde \( f(1) \) es el operador de Fock.  
+Al expandir los orbitales moleculares en una base finita de funciones \( \{\phi_\mu\} \),
+\[
+\psi_i = \sum_{\mu=1}^K C_{\mu i}\,\phi_\mu,
+\]
+las ecuaciones integradas de Hartree–Fock se transforman en la forma matricial de Roothaan:
+\begin{equation}
+\label{eq:roothaan}
+\boxed{FC = SC\epsilon.}
+\end{equation}
+
+Aquí:
+\begin{itemize}
+\item \( F \) es la matriz de Fock con elementos
+\[
+F_{\mu\nu} = \int \dd{r_1}\,\phi_\mu^*(1)\,f(1)\,\phi_\nu(1),
+\]
+\item \( S \) es la matriz de traslape
+\[
+S_{\mu\nu} = \int \dd{r_1}\,\phi_\mu^*(1)\phi_\nu(1),
+\]
+\item \( C \) es la matriz de coeficientes de expansión,
+\[
+C = 
+\begin{pmatrix}
+C_{11} & C_{12} & \cdots & C_{1K} \\
+C_{21} & C_{22} & \cdots & C_{2K} \\
+\vdots & \vdots & \ddots & \vdots \\
+C_{K1} & C_{K2} & \cdots & C_{KK}
+\end{pmatrix},
+\]
+\item y \( \epsilon \) es la matriz diagonal de energías orbitales
+\[
+\epsilon = 
+\begin{pmatrix}
+\epsilon_1 & 0 & \cdots & 0 \\
+0 & \epsilon_2 & \cdots & 0 \\
+\vdots & & \ddots & \vdots \\
+0 & 0 & \cdots & \epsilon_K
+\end{pmatrix}.
+\]
+\end{itemize}
+
+\section{Matriz de densidad}
+\label{sec:density}
+
+En el caso restringido (RHF) para sistemas de capa cerrada, la densidad electrónica es
+\[
+\rho(r) = 2\sum_{a}^{N/2}|\psi_a(r)|^2.
+\]
+Al sustituir la expansión en la base, se obtiene
+\begin{align*}
+\rho(r)
+&= \sum_{\mu\nu}\!\qty[2\sum_a^{N/2}C_{\mu a}C_{\nu a}^*]\phi_\mu(r)\phi_\nu^*(r) \\
+&= \sum_{\mu\nu}P_{\mu\nu}\phi_\mu(r)\phi_\nu^*(r),
+\end{align*}
+donde la matriz de densidad se define como
+\begin{equation}
+\label{eq:Pmat}
+\boxed{P_{\mu\nu} = 2\sum_a^{N/2} C_{\mu a}C_{\nu a}^*.}
+\end{equation}
+
+\section{Matriz de Fock}
+\label{sec:fock}
+
+El operador de Fock puede escribirse como
+\[
+f(1) = h(1) + \sum_a^{N/2}[2J_a(1) - K_a(1)],
+\]
+y su representación matricial es
+\begin{align*}
+F_{\mu\nu}
+&= \int \dd{r_1}\,\phi_\mu^*(1)h(1)\phi_\nu(1)
++ \sum_a^{N/2}\!\int \dd{r_1}\,\phi_\mu^*(1)[2J_a(1)-K_a(1)]\phi_\nu(1) \\
+&= H_{\mu\nu}^{\text{core}} + \sum_a^{N/2}[2(\mu\nu|aa) - (\mu a|a\nu)].
+\end{align*}
+
+El término de energía de un electrón (Hamiltoniano del núcleo) se define como
+\[
+H_{\mu\nu}^{\text{core}} = \int \dd{r_1}\,\phi_\mu^*(1)h(1)\phi_\nu(1)
+= T_{\mu\nu} + V_{\mu\nu}^{\text{nucl}}.
+\]
+Este término sólo se evalúa una vez en el procedimiento SCF.
+
+Al expresar los orbitales moleculares en la base, el término de dos electrones se escribe en términos de la matriz de densidad:
+\begin{align*}
+F_{\mu\nu}
+&= H_{\mu\nu}^{\text{core}} + \sum_{\lambda\sigma}
+P_{\lambda\sigma}\qty[(\mu\nu|\sigma\lambda) - \frac{1}{2}(\mu\lambda|\sigma\nu)] \\
+&= H_{\mu\nu}^{\text{core}} + G_{\mu\nu},
+\end{align*}
+donde
+\begin{equation}
+\label{eq:Gmat}
+G_{\mu\nu} = \sum_{\lambda\sigma}
+P_{\lambda\sigma}\qty[(\mu\nu|\sigma\lambda) - \frac{1}{2}(\mu\lambda|\sigma\nu)].
+\end{equation}
+Los integrales de dos electrones se definen como
+\[
+(\mu\nu|\lambda\sigma) = \int\!\!\dd{r_1}\dd{r_2}\,
+\phi_\mu^*(1)\phi_\nu(1)\frac{1}{r_{12}}\phi_\lambda^*(2)\phi_\sigma(2).
+\]
+
+\section{Ortogonalización canónica}
+\label{sec:orthogonalization}
+
+Para obtener un conjunto ortonormal de funciones base, se busca una matriz \( X \) tal que
+\[
+X^\dagger S X = \mathbb{I}.
+\]
+La \textbf{ortogonalización canónica} usa la transformación
+\begin{equation}
+\label{eq:Xmat}
+X = U s^{-1/2},
+\end{equation}
+donde \( U \) es la matriz unitaria que diagonaliza \( S \) y \( s \) es la matriz diagonal de sus autovalores:
+\[
+U^\dagger S U = s.
+\]
+
+Definimos un nuevo conjunto de coeficientes \( C' \) mediante
+\begin{equation}
+\label{eq:Ctrans}
+C' = X^{-1}C, \qquad C = X C'.
+\end{equation}
+Al sustituir \( C \) en \eqref{eq:roothaan}, y multiplicar por \( X^\dagger \), se obtiene la forma transformada:
+\begin{equation}
+\label{eq:rooth-trans}
+F' C' = C' \epsilon,
+\end{equation}
+con
+\begin{equation}
+\label{eq:Ftrans}
+F' = X^\dagger F X.
+\end{equation}
+De esta manera, las ecuaciones de Roothaan–Hall se reducen a un problema de autovalores ordinario que puede resolverse por diagonalización.
+
+\section{Procedimiento SCF}
+\label{sec:scf}
+
+El procedimiento de campo autoconsistente (\textit{Self-Consistent Field}, SCF) se resume así:
+\begin{enumerate}
+\item Especificar la molécula: coordenadas nucleares \(\{R_A\}\), números atómicos \(\{Z_A\}\), número de electrones \(N\) y base \(\{\phi_\mu\}\).
+\item Calcular todos los integrales moleculares \(S_{\mu\nu}\), \(H_{\mu\nu}^{\text{core}}\) y \((\mu\nu|\lambda\sigma)\).
+\item Diagonalizar \(S\) y obtener \(X\) según \eqref{eq:Xmat}.
+\item Proponer una matriz de densidad inicial \(P\).
+\item Calcular \(G_{\mu\nu}\) a partir de \eqref{eq:Gmat}.
+\item Formar la matriz de Fock \(F = H^{\text{core}} + G\).
+\item Calcular \(F' = X^\dagger F X\).
+\item Diagonalizar \(F'\) para obtener \(C'\) y \(\epsilon\).
+\item Calcular \(C = X C'\) y formar una nueva matriz de densidad \(P\) con \eqref{eq:Pmat}.
+\item Verificar la convergencia. Si no converge, repetir desde el paso 5.
+\end{enumerate}
+
+\section*{Resumen (Recordar)}
+\begin{itemize}
+\item Las ecuaciones de Roothaan–Hall son la forma matricial del método de Hartree–Fock.
+\item El problema \(FC=SC\epsilon\) se resuelve iterativamente mediante el procedimiento SCF.
+\item La matriz de Fock depende de la densidad electrónica, y se actualiza hasta la autoconsistencia.
+\end{itemize}
+
+\end{document}

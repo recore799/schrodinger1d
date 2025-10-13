@@ -1,0 +1,93 @@
+% Introducción a la Mecánica Cuántica — versión concisa para la sección Recordar
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb,bm,physics}
+\usepackage{geometry}
+\usepackage{hyperref}
+\geometry{a4paper,margin=1in}
+\title{Introducción a la mecánica cuántica}
+\date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+En este apartado recordamos los conceptos fundamentales de la mecánica cuántica: los postulados que definen su marco teórico y la interpretación de los observables físicos como operadores lineales en un espacio de Hilbert. Esta síntesis sirve como punto de partida para el estudio de modelos cuánticos canónicos y para el desarrollo de métodos numéricos como los empleados en este proyecto.
+\end{abstract}
+
+\section{Postulados básicos}
+\label{sec:postulados}
+
+\subsection{Postulado I: Estado cuántico}
+El estado de un sistema físico se describe completamente mediante una función de onda (o vector de estado)
+\[
+\psi(\vb{r},t) \in \mathcal{H},
+\]
+donde \(\mathcal{H}\) es un espacio de Hilbert complejo.  
+La probabilidad de encontrar la partícula en una región \(V\) del espacio está dada por
+\[
+P(V) = \int_V |\psi(\vb{r},t)|^2 \dd^3 r,
+\]
+y la normalización impone
+\[
+\int_{\mathbb{R}^3} |\psi|^2 \dd^3 r = 1.
+\]
+
+\subsection{Postulado II: Observables y operadores}
+A cada magnitud física medible le corresponde un \textbf{operador hermítico} \(\hat{A}\) que actúa sobre los estados del sistema.  
+Las posibles medidas de \(A\) son los \textbf{autovalores} de \(\hat{A}\), obtenidos de la ecuación
+\[
+\hat{A}\psi_a = a\psi_a,
+\]
+donde \(\psi_a\) son los autovectores ortogonales del operador.
+
+\subsection{Postulado III: Medición y colapso}
+Una medición de \(A\) sobre un sistema en el estado \(\psi\) produce con probabilidad
+\[
+P(a) = |\langle \psi_a | \psi \rangle|^2
+\]
+el valor \(a\), tras lo cual el estado del sistema colapsa en \(\psi_a\).
+
+\subsection{Postulado IV: Evolución temporal}
+La evolución temporal de un sistema aislado está gobernada por la ecuación de Schrödinger:
+\[
+i\hbar \pdv{\psi(\vb{r},t)}{t} = \hat{H}\psi(\vb{r},t),
+\]
+donde \(\hat{H}\) es el operador Hamiltoniano que representa la energía total del sistema.
+
+\section{Operadores y valores esperados}
+\label{sec:esperados}
+
+Dado un observable \(\hat{A}\) y un estado normalizado \(\psi\), el \textbf{valor esperado} de \(A\) es
+\[
+\langle A \rangle = \langle \psi | \hat{A} | \psi \rangle
+= \int \psi^*(\vb{r})\,\hat{A}\psi(\vb{r})\,\dd^3 r.
+\]
+Este valor representa el promedio de muchas mediciones idénticas sobre sistemas preparados en el mismo estado.
+
+\subsection{Ejemplos comunes}
+\begin{itemize}
+\item Operador de posición: \(\hat{\vb{r}} = \vb{r}\)
+\item Operador de momento: \(\hat{\vb{p}} = -i\hbar\nabla\)
+\item Operador de energía (Hamiltoniano): \(\hat{H} = \frac{\hat{\vb{p}}^2}{2m} + V(\vb{r})\)
+\end{itemize}
+
+Estos operadores obedecen la relación de conmutación fundamental:
+\[
+[\hat{x}_i,\hat{p}_j] = i\hbar\,\delta_{ij}.
+\]
+De ella se deriva el principio de incertidumbre de Heisenberg:
+\[
+\Delta x_i\,\Delta p_i \geq \frac{\hbar}{2}.
+\]
+
+\section*{Resumen (Recordar)}
+\begin{itemize}
+\item Los estados cuánticos son vectores en un espacio de Hilbert y su módulo cuadrado da una probabilidad.
+\item Los observables son operadores hermíticos con autovalores reales.
+\item El valor esperado de un observable se calcula como \(\langle \psi|\hat{A}|\psi\rangle\).
+\item La evolución temporal está regida por la ecuación de Schrödinger.
+\end{itemize}
+
+\end{document}
