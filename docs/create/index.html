@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crear — Extiende el proyecto</title>
+<style>
+:root{
+  --bg:#0d1117;
+  --fg:#e6edf3;
+  --accent:#58a6ff;
+}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  margin:0;
+  padding:2rem;
+  line-height:1.6;
+}
+h1,h2,h3{color:var(--accent);}
+h1{text-align:center;margin-bottom:1rem;}
+p,li{max-width:850px;}
+code,pre{
+  background:#0b1320;
+  border:1px solid #1f2a3a;
+  border-radius:6px;
+  padding:.2rem .4rem;
+  color:#9bd3ff;
+}
+pre{padding:.8rem;overflow-x:auto;}
+section{margin-bottom:2rem;}
+a{color:#9bd3ff;text-decoration:none;}
+a:hover{text-decoration:underline;}
+button.back{
+  display:inline-block;
+  margin-bottom:1rem;
+  padding:.6rem 1.2rem;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:background .2s;
+}
+button.back:hover{background:#4490e6;}
+footer{
+  text-align:center;
+  opacity:.7;
+  margin-top:2rem;
+  font-size:.9rem;
+}
+</style>
+</head>
+<body>
+
+<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+
+<h1>Crear — Extiende el proyecto</h1>
+
+<section>
+  <p>
+    En este nivel se invita a los estudiantes y colaboradores a modificar y ampliar
+    el código del proyecto
+    <a href="https://github.com/recore799/schrodinger1d" target="_blank">
+      <code>schrodinger1d</code>
+    </a>.
+    El propósito es fomentar la creatividad, la exploración y el aprendizaje a través
+    de la experimentación directa con los módulos existentes.
+  </p>
+</section>
+
+<section>
+  <h2>Clonar el repositorio</h2>
+  <p>Para comenzar, clona el repositorio en tu computadora:</p>
+  <pre><code>git clone https://github.com/recore799/schrodinger1d.git
+cd schrodinger1d</code></pre>
+
+  <p>
+    El proyecto está escrito en Python y organizado en módulos independientes.
+    Se recomienda crear un entorno virtual e instalar las dependencias:
+  </p>
+  <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt</code></pre>
+
+  <p>
+    <strong>Nota:</strong> El repositorio es privado; si deseas contribuir directamente,
+    deberás solicitar acceso como colaborador o hacer un <em>fork</em> en tu propia cuenta
+    para trabajar en una copia del proyecto.
+  </p>
+</section>
+
+<section>
+  <h2>Ideas para extender el módulo de Hartree–Fock</h2>
+  <ul>
+    <li><b>Nuevas integrales:</b> crear rutinas que calculen integrales de dos electrones
+        incluyendo orbitales <i>p</i>.</li>
+    <li><b>Mejor convergencia SCF:</b> implementar métodos de mezcla o aceleración DIIS.</li>
+    <li><b>Densidad inicial mejorada:</b> probar estrategias alternativas para construir la
+        matriz de densidad inicial \( P \).</li>
+    <li><b>Comparaciones de referencia:</b> integrar scripts que validen los resultados contra
+        programas como <code>PySCF</code> o <code>Psi4</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Ideas para extender el módulo de Numerov</h2>
+  <ul>
+    <li><b>Nuevos potenciales:</b> implementar funciones como \( V(x)=ax^4+bx^2 \) o
+        \( V(x)=-V_0 e^{-\alpha x^2} \).</li>
+    <li><b>Estados excitados:</b> desarrollar rutinas para encontrar y normalizar estados con nodos.</li>
+    <li><b>Visualización:</b> integrar <code>matplotlib</code> o <code>plotly</code> para
+        generar gráficas interactivas.</li>
+    <li><b>Comparaciones analíticas:</b> verificar la precisión frente a soluciones conocidas
+        del oscilador armónico y el átomo de hidrógeno.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Cómo contribuir</h2>
+  <p>Para añadir una nueva característica o mejora, crea una rama y envía tus cambios:</p>
+  <pre><code>git checkout -b feature/nueva_funcionalidad
+git commit -am "Implementa nueva rutina de integrales"
+git push origin feature/nueva_funcionalidad</code></pre>
+
+  <p>
+    Incluye comentarios claros, pruebas básicas y una breve descripción en el
+    <code>README.md</code>. Las contribuciones pueden enviarse como <em>pull requests</em>.
+  </p>
+</section>
+
+<footer>
+  Proyecto libre de enseñanza — Universidad de Sonora, 2025
+</footer>
+
+</body>
+</html>

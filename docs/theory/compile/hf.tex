@@ -1,0 +1,95 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{Derivación de las Ecuaciones Canónicas de Hartree-Fock}
+\author{Basado en "Modern Quantum Chemistry" de Szabo y Ostlund}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción: El Objetivo}
+
+El método de Hartree-Fock busca encontrar la mejor aproximación para la función de onda de un sistema de N electrones, asumiendo que esta puede ser descrita por un único determinante de Slater $|\Psi_0\rangle$. "La mejor" aproximación es aquella que minimiza la energía del sistema.
+
+El objetivo es, por lo tanto, minimizar el valor de expectación de la energía $E_0 = \langle\Psi_0|\mathcal{H}|\Psi_0\rangle$, que es un \textbf{funcional} de los espín-orbitales $\{\chi_a\}$ que componen el determinante. Sin embargo, esta minimización debe realizarse sujeta a una restricción fundamental: los espín-orbitales deben permanecer ortonormales entre sí.
+
+$$ [a|b] = \int \chi_a^*(1)\chi_b(1)dx_1 = \delta_{ab} $$ [cite: 69]
+
+Para resolver este problema de minimización con restricciones, utilizamos la técnica de \textbf{variación de funcionales} junto con el método de los multiplicadores indeterminados de Lagrange.
+
+\section{Planteamiento del Problema de Minimización}
+
+Primero, definimos el funcional que vamos a minimizar. Este funcional, que llamaremos $\mathcal{L}$, incluye la energía del determinante de Slater y las restricciones de ortonormalidad.
+
+La energía de un único determinante de Slater, $E_0$, está dada por:
+$$ E_0[\{\chi_a\}] = \sum_{a=1}^{N} [a|h|a] + \frac{1}{2} \sum_{a=1}^{N} \sum_{b=1}^{N} ([aa|bb] - [ab|ba]) $$ [cite: 78]
+
+Donde $[a|h|a]$ son las integrales de un electrón (energía cinética y atracción nuclear) y $[aa|bb]$ (Coulomb) y $[ab|ba]$ (intercambio) son las integrales de dos electrones.
+
+Construimos el funcional Lagrangiano $\mathcal{L}$ restando las restricciones de la energía, cada una multiplicada por un multiplicador de Lagrange $\epsilon_{ba}$:
+
+[cite_start]$$ \mathcal{L}[\{\chi_a\}] = E_0[\{\chi_a\}] - \sum_{a=1}^{N}\sum_{b=1}^{N}\epsilon_{ba}([a|b] - \delta_{ab}) $$ [cite: 75]
+
+[cite_start]Los multiplicadores $\epsilon_{ba}$ forman una matriz que debe ser Hermítica ($\epsilon_{ba} = \epsilon_{ab}^*$) para asegurar que el funcional $\mathcal{L}$ sea real[cite: 79, 80].
+
+\section{Aplicando la Condición Variacional}
+
+[cite_start]Para encontrar el mínimo, la \textbf{primera variación} de $\mathcal{L}$ con respectoa los espín-orbitales debe ser cero, $\delta\mathcal{L} = 0$[cite: 85, 86]. [cite_start]Esto significa que cualquier cambio infinitesimal en los espín-orbitales, $\chi_a \rightarrow \chi_a + \delta\chi_a$, no debe alterar el valor de $\mathcal{L}$ en el mínimo[cite: 84].
+
+[cite_start]$$ \delta\mathcal{L} = \delta E_0 - \sum_{a=1}^{N}\sum_{b=1}^{N}\epsilon_{ba}\delta[a|b] = 0 $$ [cite: 86]
+
+Al calcular la variación de cada término y simplificar (agrupando los términos que contienen $\delta\chi_a^*$ y sus complejos conjugados), llegamos a la siguiente expresión para $\delta\mathcal{L}$:
+
+\begin{align*}
+\delta\mathcal{L} = & \sum_{a=1}^{N} \int \delta\chi_a^*(1) \left( h(1)\chi_a(1) + \sum_{b=1}^{N} (J_b(1) - K_b(1))\chi_a(1) - \sum_{b=1}^{N}\epsilon_{ba}\chi_b(1) \right) dx_1 \\
+[cite_start]& + \text{complejo conjugado} = 0 \quad \text{[cite: 109, 110]}
+\end{align*}
+
+[cite_start]Donde $J_b$ y $K_b$ son los operadores de Coulomb e intercambio, respectivamente[cite: 108]. [cite_start]Dado que la variación $\delta\chi_a^*$ es arbitraria, la única forma de que la ecuación sea siempre cero es que el término entre paréntesis sea idénticamente cero[cite: 112].
+
+Esto nos lleva a las \textbf{ecuaciones de Hartree-Fock en su forma general}:
+[cite_start]$$ \left[ h(1) + \sum_{b=1}^{N} (J_b(1) - K_b(1)) \right] \chi_a(1) = \sum_{b=1}^{N}\epsilon_{ba}\chi_b(1) $$ [cite: 113]
+
+[cite_start]Podemos definir el \textbf{operador de Fock}, $f(1)$, como el término entre corchetes[cite: 114]. Con esto, la ecuación se simplifica a:
+[cite_start]$$ f|\chi_a\rangle = \sum_{b=1}^{N}\epsilon_{ba}|\chi_b\rangle $$ [cite: 116]
+
+[cite_start]Este resultado aún no es una ecuación de eigenvalores estándar, ya que el operador de Fock actuando sobre un espín-orbital $\chi_a$ da como resultado una combinación lineal de todos los espín-orbitales[cite: 118].
+
+\section{La Invarianza Unitaria y la Forma Canónica}
+
+[cite_start]Un punto clave es que un determinante de Slater es invariante (salvo por un factor de fase irrelevante) ante una \textbf{transformación unitaria} de sus espín-orbitales[cite: 161, 163]. Si definimos un nuevo conjunto de orbitales $\{\chi'_a\}$ a partir de los originales $\{\chi_a\}$ mediante una matriz unitaria $U$:
+
+[cite_start]$$ \chi'_a = \sum_{b} \chi_b U_{ba} $$ [cite: 125]
+
+[cite_start]El nuevo determinante de Slater $|\Psi'_0\rangle$ y el original $|\Psi_0\rangle$ están relacionados por $|\Psi'_0\rangle = \det(U)|\Psi_0\rangle$[cite: 148]. Como $U$ es unitaria, $|\det(U)| [cite_start]= 1$, por lo que la función de onda es físicamente la misma[cite: 156].
+
+[cite_start]Además, se puede demostrar que el \textbf{operador de Fock es invariante} bajo esta transformación ($f' = f$)[cite: 183]. Sin embargo, la matriz de multiplicadores de Lagrange sí se transforma de la siguiente manera:
+
+[cite_start]$$ \epsilon' = U^\dagger \epsilon U $$ [cite: 191]
+
+Aquí es donde reside la solución. [cite_start]Como la matriz $\epsilon$ es Hermítica [cite: 195][cite_start], la teoría del álgebra lineal nos asegura que \textbf{siempre existe una transformación unitaria $U$ que la diagonaliza}[cite: 195]. Podemos elegir esa $U$ específica. Para esta elección particular, la nueva matriz de multiplicadores $\epsilon'$ será diagonal:
+
+$$ \epsilon'_{ab} = \epsilon'_a \delta_{ab} $$
+
+Ahora, reescribimos las ecuaciones de Hartree-Fock para el nuevo conjunto de orbitales $\{\chi'_a\}$ (que llamaremos canónicos):
+
+$$ f'|\chi'_a\rangle = \sum_{b=1}^{N}\epsilon'_{ab}|\chi'_b\rangle $$
+
+Como $f' = f$ y $\epsilon'_{ab}$ es diagonal, la suma del lado derecho se colapsa a un solo término:
+
+[cite_start]$$ f|\chi'_a\rangle = \epsilon'_a |\chi'_a\rangle $$ [cite: 198]
+
+Finalmente, si omitimos las primas para simplificar la notación, llegamos a las \textbf{ecuaciones canónicas de Hartree-Fock}:
+
+[cite_start]$$ f|\chi_a\rangle = \epsilon_a |\chi_a\rangle $$ [cite: 202]
+
+[cite_start]Esta sí es una verdadera ecuación de eigenvalores[cite: 2]. [cite_start]Los espín-orbitales $\{\chi_a\}$ que son solución de esta ecuación se denominan \textbf{espín-orbitales canónicos} y sus eigenvalores asociados, $\epsilon_a$, son las energías orbitales[cite: 2, 200]. [cite_start]Estas ecuaciones, al ser no lineales (el operador de Fock depende de sus propias soluciones), deben resolverse de manera iterativa[cite: 8].
+
+\end{document}

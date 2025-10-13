@@ -4,14 +4,27 @@
 \usepackage{amsmath,amssymb,bm,physics}
 \usepackage{geometry}
 \usepackage{hyperref}
+\usepackage[spanish]{babel}
 \geometry{a4paper,margin=1in}
 \date{}
-\title{Método de Hartree-Fock}
+\title{Método de Numerov}
 
 \begin{document}
 \maketitle
 
-\section{Método de Numerov}
+\begin{abstract}
+En este apartado se presenta el método de Numerov, un esquema de integración
+numérica de alta precisión para ecuaciones diferenciales de segundo orden
+de la forma \(y''(x) = -g(x)y(x) + s(x)\).
+El método se basa en la expansión de Taylor hasta quinto orden y elimina los
+términos de derivadas impares, alcanzando un error de truncamiento del orden
+\(\mathcal{O}[(\Delta x)^6]\).
+Su simplicidad y estabilidad lo hacen especialmente útil para resolver
+la ecuación de Schrödinger unidimensional en sistemas como el oscilador armónico
+y el átomo de hidrógeno.
+\end{abstract}
+
+\section{Introducción}
 \label{sec:org58b07f0}
 
 Método numérico desarrollado por el astrónomo ruso Boris Vasilyevich Numerov en la década de 1910. Se basa en desarrollar la expansión de Taylor de una función \(y : I \subset \mathbb{R} \to \mathbb{R}\) alrededor de un punto \(x_0 \in I\), donde \(y\) es solución a la ecuación diferencial de segundo orden
@@ -23,11 +36,13 @@ Método numérico desarrollado por el astrónomo ruso Boris Vasilyevich Numerov 
 
 con \(g: I \to \mathbb{R}\) y \(s: I \to \mathbb{R}\) como funciones conocidas, definidas en el mismo intervalo \(I\) que \(y\). Para que la expansión de Taylor sea válida hasta el orden requerido, se exige que \(y\) sea al menos \(C^4\) i.e. cuatro veces diferenciable. Además, \(g\) y \(s\) deben ser funciones suficientemente suaves e.g. continuas, para garantizar la existencia de una solución.
 
-El método de Numerov sigue un esquema de diferencias finitas, por lo que comenzamos con una expansión de Taylor, a quinto órden. Para un paso adelante \((x= x_{0} + \Delta x)\) y un paso atrás \((x=x_{0} - \Delta x)\), se tiene
+\section{Derivación}
 
-\[ y(x_{0} + \Delta x ) = y(x_{0}) + y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 + \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 + \frac{y^{(5)}(x_0)}{5!} + \order{\Delta x^6}, \]
+El método de Numerov sigue un esquema de diferencias finitas, por lo que comenzamos con una expansión de Taylor, hasta quinto órden. Para un paso adelante \((x= x_{0} + \Delta x)\) y un paso atrás \((x=x_{0} - \Delta x)\), se tiene
 
-\[ y(x_{0} - \Delta x ) = y(x_{0}) - y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 - \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 - \frac{y^{(5)}(x_0)}{5!} + \order{\Delta x^6}. \]
+\[ y(x_{0} + \Delta x ) = y(x_{0}) + y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 + \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 + \frac{y^{(5)}(x_0)}{5!} + \order{(\Delta x)^6}, \]
+
+\[ y(x_{0} - \Delta x ) = y(x_{0}) - y'(x_{0})\Delta x + \frac{y''(x_{0})}{2!} \Delta x^2 - \frac{y'''(x_{0})}{3!}\Delta x^3 + \frac{y^{(4)}(x_{0})}{4!}\Delta x^4 - \frac{y^{(5)}(x_0)}{5!} + \order{(\Delta x)^6}. \]
 
 Se define una malla uniforme \(x_n = x_0 + n\Delta x\) y se denota:
 
@@ -38,9 +53,9 @@ Se define una malla uniforme \(x_n = x_0 + n\Delta x\) y se denota:
 
 Así, las expansiones se reescriben como:
 
-\[ y_{n+1} = y_n + y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 + \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 + \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{\Delta x^6} \]
+\[ y_{n+1} = y_n + y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 + \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 + \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{(\Delta x)^6} \]
 
-\[ y_{n-1} = y_n - y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 - \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 - \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{\Delta x^6} \]
+\[ y_{n-1} = y_n - y_n' \Delta x + \frac{1}{2} y_n'' (\Delta x)^2 - \frac{1}{6} y_n''' (\Delta x)^3 + \frac{1}{24} y_n^{(4)} (\Delta x)^4 - \frac{1}{120} y_n^{(5)} (\Delta x)^5 + \order{(\Delta x)^6} \]
 
 Al sumar ambos desarrollos se obtiene
 
