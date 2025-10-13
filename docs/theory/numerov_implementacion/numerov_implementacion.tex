@@ -1,0 +1,191 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,bm,physics}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper,margin=1in}
+
+\title{Documentación del Método de Numerov}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Esta documentación describe detalladamente la implementación numérica del método de Numerov 
+para resolver la ecuación de Schrödinger unidimensional, aplicada tanto al oscilador armónico 
+como al átomo de hidrógeno. Se discuten las decisiones de diseño, la notación, las condiciones 
+de frontera, el algoritmo de bisección, los criterios de convergencia y las correcciones por 
+teoría de perturbaciones. Además, se analiza la transformación a una malla logarítmica para el 
+caso radial.
+\end{abstract}
+
+\section{Notación y convenciones numéricas}
+\label{sec:notation}
+
+\subsection{Discretización y funciones continuas}
+Para representar funciones continuas \(\psi(x) : x\in I \subset \mathbb{R} \to \mathbb{R}\) de forma numérica:
+
+\begin{itemize}
+\item Se discretiza el dominio en una malla equiespaciada \(x_i = i\,\Delta x\), donde
+\[ i \in \{0,1,\ldots,mesh\}. \]
+\item Los valores de \(\psi(x_i)\) se almacenan en un arreglo \(\psi_i\) indexado:
+\[ \psi_i \equiv \psi(x_i) \to \psi[i] \text{ en Python}. \]
+\end{itemize}
+
+\subsection{Implementación en Python}
+Para una malla con \(mesh\) intervalos (\(mesh + 1\) puntos), el último elemento del arreglo es:
+
+\begin{lstlisting}[language=Python]
+mesh = 100
+x = np.linspace(mesh+1)
+psi = f(x)
+psi[0]      # Primer elemento
+psi[mesh]   # Ultimo elemento
+\end{lstlisting}
+
+Como Python es cero indexado, definir la malla con \(mesh + 1\) puntos asegura que 
+\(x_{\text{max}} = mesh \,\Delta x\) y que \(\psi_{\text{max}} = \psi[mesh]\).
+
+\subsection{Notación}
+Usamos tres formas equivalentes de representar el mismo número:
+\[
+\underbrace{\psi_R(x)}_{\text{Función de }x}
+\to
+\underbrace{\psi_i^R}_{\text{Valor i-ésimo}}
+\to
+\underbrace{psi\_R[i]}_{\text{Elemento del arreglo}}.
+\]
+
+\section{Algoritmo de bisección para el oscilador armónico}
+\label{sec:ho-bisection}
+
+\subsection{Descripción general}
+El método se basa en discretizar el dominio espacial y ajustar la energía \(E\)
+mediante bisección hasta encontrar una solución continua y normalizable de la ecuación de Schrödinger.
+
+\begin{itemize}
+\item \textbf{Inicialización de la malla:}  
+  Se discretiza \(x\in[0,x_{\text{max}}]\) en \(mesh+1\) puntos equiespaciados.  
+  Gracias a la simetría del potencial armónico \(\psi_n(-x)=(-1)^n\psi_n(x)\), 
+  basta integrar en \([0,x_{\text{max}}]\).
+
+  \[
+  V(x)=\frac{1}{2}x^2 \;\to\; V_i=0.5\,x_i^2.
+  \]
+
+\item \textbf{Búsqueda de eigenvalores por bisección:}  
+  Se definen cotas iniciales \(E_{\text{min}}=\min(V)\), \(E_{\text{max}}=\max(V)\), 
+  buscando \(E\) tal que la solución \(\psi(x)\) sea suave, normalizable y cumpla las condiciones de frontera.
+
+\item \textbf{Cálculo del punto de retorno clásico:}  
+  Se identifica el primer índice donde \(V(x)>E\) usando la función auxiliar:
+  \[
+  f^{aux}=2(V-E)\frac{\Delta x^2}{12}.
+  \]
+
+\item \textbf{Integración numérica de \(\psi(x)\):}  
+  Se realizan dos integraciones:
+  \begin{itemize}
+  \item \emph{Hacia afuera} \((0\to icl)\): se propaga con Numerov desde las condiciones iniciales.
+  \item \emph{Hacia adentro} \((x_{\text{max}}\to icl)\): se impone \(\psi(x_{\text{max}})=0\)
+  y se retropropaga.
+  \end{itemize}
+  Las soluciones \(\psi^L\) y \(\psi^R\) se acoplan en el punto \(x_c=icl\,\Delta x\).
+
+\item \textbf{Acoplamiento y normalización:}  
+  Se escalan las soluciones para garantizar continuidad en \(x_c\):
+  \[
+  \psi^R \leftarrow \psi^R \frac{\psi^L_{icl}}{\psi^R_{icl}},
+  \]
+  y se normaliza:
+  \[
+  \mathcal{N}=\int 2|\psi|^2\,dx, \qquad \psi\to \frac{\psi}{\mathcal{N}}.
+  \]
+
+\item \textbf{Criterio de convergencia:}  
+  Se calcula la discontinuidad de la derivada \(\Delta\psi'\) en \(icl\).  
+  Si \(\Delta\psi'\psi_{icl}>0\), la energía es demasiado alta;  
+  si \(\Delta\psi'\psi_{icl}<0\), es demasiado baja.  
+  Se actualizan las cotas hasta cumplir:
+  \[
+  E_{\text{max}}-E_{\text{min}}<tol.
+  \]
+\end{itemize}
+
+\section{Punto de retorno clásico}
+El punto \(x_{rc}\) marca el límite entre las regiones clásicamente permitida y prohibida:
+\[
+V(x_{rc})=E.
+\]
+En \(x<x_{rc}\), \(\psi\) oscila; en \(x>x_{rc}\), decae exponencialmente.
+El índice \(icl\) aproxima este punto en la malla discreta.
+
+\section{Integración y condiciones iniciales}
+La paridad del estado define las condiciones iniciales:
+
+\[
+\psi_n(-x)=(-1)^n\psi_n(x).
+\]
+\begin{itemize}
+\item Estados impares: \(\psi_0=0\), \(\psi_1=\Delta x\).
+\item Estados pares: \(\psi_0=1\),
+\(\psi_1=\frac{(12-10f_0\psi_0)}{2f_1}\).
+\end{itemize}
+
+\section{Criterio de convergencia}
+Tras acoplar y normalizar, se evalúa la discontinuidad:
+\[
+\psi'^{R}_{icl}-\psi'^{L}_{icl}
+=\frac{\psi_{icl+1}^R+\psi_{icl-1}^L-[14-12f_i]\psi_{icl}}{\Delta x}.
+\]
+El signo de esta cantidad determina si \(E\) debe aumentar o disminuir.
+
+\section{Algoritmo de bisección para el átomo de hidrógeno}
+Se usa una malla logarítmica:
+\[
+x=\ln(Zr), \qquad r=\frac{e^x}{Z}.
+\]
+El potencial efectivo:
+\[
+V_{\text{ef}}=-2\frac{Z}{r}+\frac{l(l+1)}{r^2}.
+\]
+El método procede de manera análoga al caso armónico, ajustando las condiciones iniciales según el comportamiento asintótico de la función radial.
+
+\section{Corrección de energía por teoría de perturbaciones}
+Para acelerar la convergencia se calcula una corrección de energía basada en la discontinuidad local del término \(f\) en el punto de acoplamiento.  
+Usando teoría de perturbaciones de primer orden:
+\[
+\delta e = |\psi(x_c)|^2 r(x_c)^2 \delta V \Delta x 
+= - \frac{\hbar^2}{2m}\frac{12}{\Delta x^2}|\psi(x_c)|^2 \Delta x\,\delta f.
+\]
+Esto permite estimar la diferencia entre el eigenvalor actual y el exacto para el potencial sin perturbación.
+
+\section{Transformación a malla logarítmica}
+Para la ecuación radial:
+\[
+x(r)=\ln\frac{Zr}{a_0}, \qquad \Delta x=\frac{\Delta r}{r}.
+\]
+Al reescribir la ecuación de Schrödinger en esta variable, aparece un término de derivada primera, por lo que se redefine:
+\[
+y(x)=\frac{1}{\sqrt{r}}\chi(r(x)),
+\]
+obteniendo una forma integrable:
+\[
+\dv[2]{y}{x}+\qty[\frac{2m_e}{\hbar^2}r^2(E-V(r))-(l+\tfrac{1}{2})^2]y(x)=0.
+\]
+
+\section*{Conclusión}
+El método de Numerov, aplicado al oscilador armónico y al átomo de hidrógeno,
+constituye una técnica precisa y estable para resolver la ecuación de Schrödinger unidimensional.  
+Cada detalle de implementación —desde la elección de malla hasta el criterio de convergencia—
+refleja directamente los principios físicos del sistema.  
+Esta documentación busca servir como referencia técnica y como guía pedagógica para futuras 
+extensiones del método, mostrando cómo el pensamiento numérico y el físico se complementan 
+para alcanzar soluciones elegantes y rigurosas.
+
+\end{document}

@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,physics}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage[spanish]{babel}
+\geometry{a4paper,margin=1in}
+
+\title{Documentación básica del método de Hartree–Fock restringido (RHF)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento describe de manera concisa la implementación del método de Hartree–Fock restringido (RHF)
+en el código desarrollado para moléculas diatómicas con una base mínima tipo \texttt{s}.
+Se presentan los componentes principales del algoritmo, la estructura de módulos para el cálculo de integrales,
+y el procedimiento de autoconsistencia (SCF). El objetivo es proporcionar una referencia breve
+que documente las decisiones de diseño sin entrar en los desarrollos matemáticos de las integrales gaussianas.
+\end{abstract}
+
+\section{Introducción}
+El método de Hartree–Fock (HF) busca obtener una aproximación determinantal a la función de onda
+de un sistema electrónico, minimizando la energía total bajo la restricción de ortonormalidad de los orbitales.
+La versión restringida (RHF) asume que los electrones de espín $\alpha$ y $\beta$
+ocupan el mismo conjunto de orbitales espaciales, simplificando el cálculo.
+
+En esta implementación, el procedimiento se desarrolla para una base mínima de funciones tipo Gaussiana,
+suficiente para moléculas diatómicas como \(\mathrm{H_2}\) o \(\mathrm{HeH^+}\).
+
+\section{Estructura del código}
+El cálculo principal se realiza en el módulo \texttt{rhf\_s\_old.py}, apoyado por el módulo \texttt{s\_integrals.py},
+que contiene las rutinas para el cálculo de los integrales de una base \texttt{s}-tipo.
+
+\subsection{Cálculo de integrales atómicas}
+El módulo \texttt{s\_integrals.py} construye los arreglos de integrales requeridos para el procedimiento SCF:
+
+\begin{itemize}
+\item \textbf{Matriz de traslape} \( S_{\mu\nu} = \langle \phi_\mu | \phi_\nu \rangle \)
+\item \textbf{Matriz cinética} \( T_{\mu\nu} = \langle \phi_\mu | -\frac{1}{2}\nabla^2 | \phi_\nu \rangle \)
+\item \textbf{Atracción nuclear} \( V_{\mu\nu} = \langle \phi_\mu | \sum_A \frac{-Z_A}{r_A} | \phi_\nu \rangle \)
+\item \textbf{Integrales bielectrónicas} \((\mu\nu|\lambda\sigma)\)
+\end{itemize}
+
+Cada integral se calcula como suma de contribuciones entre primitivas gaussianas de tipo \((\alpha, d)\),
+y las integrales bielectrónicas se almacenan en forma \emph{sparse} mediante un diccionario indexado
+por claves canónicas que respetan las simetrías de permutación:
+
+\[
+(\mu\nu|\lambda\sigma) = (\nu\mu|\lambda\sigma) = (\mu\nu|\sigma\lambda) = \ldots
+\]
+
+\subsection{Construcción del Hamiltoniano}
+Se define el Hamiltoniano de núcleo fijo:
+\[
+H_{\mu\nu}^{\text{core}} = T_{\mu\nu} + V_{\mu\nu}.
+\]
+Este operador se usa para obtener la energía de referencia (guess inicial)
+y la energía electrónica total:
+\[
+E_{\text{elec}} = \sum_{\mu\nu} P_{\mu\nu}(H_{\mu\nu}^{\text{core}} + \tfrac{1}{2}F_{\mu\nu}),
+\]
+donde \(P_{\mu\nu}\) es la matriz de densidad.
+
+\section{Algoritmo SCF (RHF)}
+El procedimiento de autoconsistencia (SCF) implementado sigue los pasos clásicos:
+
+\begin{enumerate}
+\item \textbf{Inicialización de matrices:} se calculan \(S, T, V, H_{\text{core}}\)
+y el diccionario de integrales bielectrónicas \texttt{eri\_dict}.
+\item \textbf{Ortonormalización simétrica:} se obtiene \(X = S^{-1/2}\) mediante
+\texttt{fractional\_matrix\_power(S, -0.5)}.
+\item \textbf{Conjetura inicial:} matriz de densidad \(P=0\).
+\item \textbf{Bucle SCF:}
+  \begin{enumerate}
+  \item Construcción del operador de Fock:
+  \[
+  F_{\mu\nu} = H_{\mu\nu}^{\text{core}} + \sum_{\lambda\sigma} P_{\lambda\sigma}
+  \left[ (\mu\nu|\lambda\sigma) - \tfrac{1}{2}(\mu\lambda|\nu\sigma) \right].
+  \]
+  \item Transformación a la base ortonormal: \( F' = X^T F X \).
+  \item Diagonalización de \(F'\) para obtener los orbitales moleculares \(C'\) y energías \(\epsilon\).
+  \item Retrotransformación: \(C = X C'\).
+  \item Construcción de la nueva densidad:
+  \[
+  P_{\mu\nu} = 2 \sum_{i}^{\text{occ}} C_{\mu i} C_{\nu i}.
+  \]
+  \item Cálculo de la energía total y prueba de convergencia (\(\Delta P_{\text{rms}} < 10^{-6}\)).
+  \end{enumerate}
+\end{enumerate}
+
+El ciclo termina cuando la matriz de densidad converge.  
+La energía total final se obtiene como:
+\[
+E_{\text{total}} = E_{\text{elec}} + E_{\text{nuc}}.
+\]
+
+\section{Módulos auxiliares}
+El código incluye utilidades adicionales:
+\begin{itemize}
+\item \texttt{compute\_nuclear\_repulsion\_energy}: calcula la energía de repulsión nuclear generalizada.
+\item \texttt{primitives\_to\_ao\_list}, \texttt{ao\_centers\_from\_pos}, \texttt{atom\_of\_mu\_from\_primitives}: funciones de mapeo entre primitivas, átomos y orbitales.
+\item \texttt{print\_final\_results}: genera un resumen final de la energía y los orbitales convergidos.
+\end{itemize}
+
+\section{Notas sobre implementación}
+\begin{itemize}
+\item Las integrales están programadas para una base \texttt{s}-tipo; 
+la extensión a \texttt{p} u orbitales de mayor momento angular requiere nuevos tensores de integrales.
+\item La estructura \texttt{eri\_dict} reduce significativamente el costo en memoria respecto a un tensor \(N^4\).
+\item El algoritmo usa \textbf{ortonormalización simétrica}, que es estable incluso cuando \(S\) es mal condicionado.
+\end{itemize}
+
+\section*{Conclusión}
+Este módulo constituye una implementación autocontenida y didáctica del método de Hartree–Fock restringido.
+Aun en su forma básica, permite explorar los principios del método SCF, el papel de las integrales atómicas,
+y la construcción del operador de Fock. Futuras extensiones pueden incluir:
+uso de bases extendidas (STO-3G, 6-31G), incorporación de integrales \(p\)-tipo,
+y el desarrollo de módulos post-Hartree–Fock.
+
+\end{document}
