@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crear — Extensión y experimentación</title>
+<style>
+:root{
+  --bg:#0d1117;
+  --fg:#e6edf3;
+  --accent:#58a6ff;
+  --code-bg:#161b22;
+  --code-border:#30363d;
+}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  margin:0;
+  padding:2rem;
+  line-height:1.6;
+}
+h1,h2{color:var(--accent);}
+h1{text-align:center;margin-bottom:1rem;}
+p,li{max-width:850px;}
+button.back{
+  display:inline-block;
+  margin-bottom:1rem;
+  padding:.6rem 1.2rem;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:background .2s;
+}
+button.back:hover{background:#4490e6;}
+blockquote{
+  border-left:3px solid var(--accent);
+  padding-left:1rem;
+  margin:auto;
+  max-width:800px;
+  font-style:italic;
+  color:#c0d4f0;
+}
+pre{
+  background:var(--code-bg);
+  border:1px solid var(--code-border);
+  border-radius:8px;
+  padding:1rem;
+  overflow-x:auto;
+  max-width:850px;
+  margin:auto;
+  font-family:Consolas,Menlo,monospace;
+  font-size:.9rem;
+}
+code{color:#9bd3ff;}
+footer{
+  text-align:center;
+  opacity:.7;
+  margin-top:2rem;
+  font-size:.9rem;
+}
+</style>
+</head>
+<body>
+
+<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+
+<h1>Crear — Extensión y experimentación</h1>
+
+<section>
+  <p>
+    En la etapa de <strong>Crear</strong> el estudiante o investigador deja de ser un usuario
+    del código para convertirse en su <em>autor</em>. Aquí se integran los conocimientos adquiridos
+    durante las etapas previas y se utilizan para extender o modificar la librería, probando
+    nuevas ideas y algoritmos.
+  </p>
+
+  <blockquote>
+    Crear es transformar la comprensión en acción. Cada nueva línea de código es un
+    experimento, una hipótesis puesta a prueba.
+  </blockquote>
+
+  <p>
+    Este proyecto está pensado para ser libre y extensible. Puedes descargar o clonar
+    el repositorio en GitHub:
+  </p>
+
+  <pre><code>git clone https://github.com/recore799/schrodinger1d.git
+cd schrodinger1d
+</code></pre>
+
+  <p>
+    Si deseas colaborar oficialmente, solicita acceso o realiza un <em>fork</em> de la
+    versión pública. Las contribuciones pueden centrarse en mejorar la eficiencia del
+    algoritmo, ampliar la base de orbitales o añadir nuevos ejemplos visuales.
+  </p>
+</section>
+
+<section>
+  <h2>Ejemplos de creación</h2>
+
+  <p>
+    A continuación se muestran fragmentos de código extraídos de los scripts de
+    <code>examples/</code>. Cada uno ilustra cómo generar nuevas visualizaciones o
+    extender los modelos existentes.
+  </p>
+
+  <h3>1. Visualizar funciones de onda del oscilador armónico</h3>
+  <pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from src.numerov.numerov import solve_oscillator
+
+n = 3  # Nivel de energía
+x, psi = solve_oscillator(n)
+
+plt.plot(x, psi**2)
+plt.title(f"Densidad de probabilidad para n={n}")
+plt.xlabel("x")
+plt.ylabel("|ψ|²")
+plt.show()</code></pre>
+
+  <h3>2. Modificar el potencial en el átomo de hidrógeno</h3>
+  <pre><code>from src.numerov.numerov import solve_atom
+
+Z = 1
+def potential(r):
+    return -Z / r + 0.05 * r  # Pequeña perturbación lineal
+
+r, psi = solve_atom(n=2, l=0, potential=potential)
+plt.plot(r, psi)
+plt.title("Estado perturbado del átomo de hidrógeno")
+plt.xlabel("r")
+plt.ylabel("ψ(r)")
+plt.show()</code></pre>
+
+  <h3>3. Extender el módulo de Hartree–Fock</h3>
+  <pre><code># Ejemplo de nuevo módulo de integrales p-type (en desarrollo)
+from src.integrals import compute_two_electron
+
+def p_integral(mu, nu, lam, sig):
+    # Implementación tentativa de integrales p-GTO
+    return compute_two_electron(mu, nu, lam, sig, angular_momentum='p')</code></pre>
+</section>
+
+<section>
+  <h2>Objetivos de la etapa</h2>
+  <ul>
+    <li>Aprender a modificar y extender la base de código existente.</li>
+    <li>Explorar el impacto físico de los cambios en los potenciales o integrales.</li>
+    <li>Generar nuevas visualizaciones y compararlas con resultados teóricos.</li>
+    <li>Desarrollar una comprensión práctica del proceso de investigación computacional.</li>
+  </ul>
+</section>
+
+<footer>
+  Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
+</footer>
+
+</body>
+</html>
