@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Crear — Extiende el proyecto</title>
+<title>Crear — Extensión y experimentación</title>
 <style>
 :root{
   --bg:#0d1117;
   --fg:#e6edf3;
   --accent:#58a6ff;
+  --code-bg:#161b22;
+  --code-border:#30363d;
 }
 body{
   background:var(--bg);
@@ -18,20 +20,9 @@ body{
   padding:2rem;
   line-height:1.6;
 }
-h1,h2,h3{color:var(--accent);}
+h1,h2{color:var(--accent);}
 h1{text-align:center;margin-bottom:1rem;}
 p,li{max-width:850px;}
-code,pre{
-  background:#0b1320;
-  border:1px solid #1f2a3a;
-  border-radius:6px;
-  padding:.2rem .4rem;
-  color:#9bd3ff;
-}
-pre{padding:.8rem;overflow-x:auto;}
-section{margin-bottom:2rem;}
-a{color:#9bd3ff;text-decoration:none;}
-a:hover{text-decoration:underline;}
 button.back{
   display:inline-block;
   margin-bottom:1rem;
@@ -45,6 +36,26 @@ button.back{
   transition:background .2s;
 }
 button.back:hover{background:#4490e6;}
+blockquote{
+  border-left:3px solid var(--accent);
+  padding-left:1rem;
+  margin:auto;
+  max-width:800px;
+  font-style:italic;
+  color:#c0d4f0;
+}
+pre{
+  background:var(--code-bg);
+  border:1px solid var(--code-border);
+  border-radius:8px;
+  padding:1rem;
+  overflow-x:auto;
+  max-width:850px;
+  margin:auto;
+  font-family:Consolas,Menlo,monospace;
+  font-size:.9rem;
+}
+code{color:#9bd3ff;}
 footer{
   text-align:center;
   opacity:.7;
@@ -55,82 +66,124 @@ footer{
 </head>
 <body>
 
-<h1>Crear — Extiende el proyecto</h1>
+<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+
+<h1>Crear — Extensión y experimentación</h1>
 
 <section>
   <p>
-    En este nivel se invita a los estudiantes y colaboradores a modificar y ampliar
-    el código del proyecto
-    <a href="https://github.com/recore799/schrodinger1d" target="_blank">
-      <code>schrodinger1d</code>
-    </a>.
-    El propósito es fomentar la creatividad, la exploración y el aprendizaje a través
-    de la experimentación directa con los módulos existentes.
+    En la etapa de <strong>Crear</strong> el participante transforma la comprensión en
+    producción científica: deja de ejecutar ejemplos existentes para diseñar, modificar
+    y experimentar con nuevos algoritmos. Aquí se integran todos los conocimientos
+    previos —físicos, matemáticos y computacionales— para generar ideas originales.
   </p>
-</section>
 
-<section>
-  <h2>Clonar el repositorio</h2>
-  <p>Para comenzar, clona el repositorio en tu computadora:</p>
+  <blockquote>
+    Crear es el punto más alto del aprendizaje: implica dominio técnico, juicio crítico
+    y capacidad de construir algo nuevo a partir de lo comprendido.
+  </blockquote>
+
+  <p>
+    Este proyecto fue concebido como un entorno abierto. Si deseas comenzar a colaborar,
+    puedes clonar el repositorio directamente desde GitHub:
+  </p>
+
   <pre><code>git clone https://github.com/recore799/schrodinger1d.git
-cd schrodinger1d</code></pre>
+cd schrodinger1d
+</code></pre>
 
   <p>
-    El proyecto está escrito en Python y organizado en módulos independientes.
-    Se recomienda crear un entorno virtual e instalar las dependencias:
-  </p>
-  <pre><code>python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt</code></pre>
-
-  <p>
-    <strong>Nota:</strong> El repositorio es privado; si deseas contribuir directamente,
-    deberás solicitar acceso como colaborador o hacer un <em>fork</em> en tu propia cuenta
-    para trabajar en una copia del proyecto.
+    Si prefieres mantener tu propia versión, realiza un <em>fork</em> y desarrolla tus
+    modificaciones localmente. Para enviar contribuciones oficiales, abre un
+    <em>pull request</em> con una breve descripción del cambio y su justificación
+    física o pedagógica.
   </p>
 </section>
 
 <section>
-  <h2>Ideas para extender el módulo de Hartree–Fock</h2>
+  <h2>Ejemplos de experimentación</h2>
+
+  <p>
+    Estos ejemplos muestran cómo introducir nuevas ideas dentro del código existente.
+    Cada uno modifica un aspecto fundamental del modelo —potencial, integración o
+    condiciones iniciales— para explorar sus consecuencias físicas.
+  </p>
+
+  <h3>1. Probar un nuevo potencial efectivo</h3>
+  <pre><code>from src.numerov.numerov import solve_atom
+
+Z = 1
+def custom_potential(r):
+    # Potencial de Coulomb más término cuadrático
+    return -Z / r + 0.002 * r**2
+
+r, psi = solve_atom(n=1, l=0, potential=custom_potential)
+</code></pre>
+  <p>
+    Este cambio introduce un término confinante débil que altera el espectro de energía.
+    Analizar su efecto permite conectar la física atómica con modelos de confinamiento cuántico.
+  </p>
+
+  <h3>2. Implementar un nuevo esquema de integración</h3>
+  <pre><code>import numpy as np
+
+def numerov_adaptativo(V, E, x, dx):
+    """Versión experimental del método de Numerov con paso variable."""
+    y = np.zeros_like(x)
+    y[0], y[1] = 0.0, dx
+    for i in range(1, len(x)-1):
+        dx_local = dx * (1 + 0.001 * abs(V[i]))
+        g = 2*(V[i]-E)
+        y[i+1] = (2*y[i]*(1 - 5*dx_local**2*g/12) - 
+                  y[i-1]*(1 + dx_local**2*g/12)) / (1 + dx_local**2*g/12)
+    return y
+</code></pre>
+  <p>
+    Este ejemplo explora una versión adaptativa del método de Numerov, ajustando el paso
+    de integración en función del potencial local para mejorar la estabilidad numérica.
+  </p>
+
+  <h3>3. Definir una nueva matriz de densidad inicial en Hartree–Fock</h3>
+  <pre><code>import numpy as np
+
+def guess_density_random(nbasis, seed=42):
+    """Matriz de densidad inicial aleatoria normalizada."""
+    np.random.seed(seed)
+    P = np.random.rand(nbasis, nbasis)
+    P = 0.5 * (P + P.T)  # Simetrizar
+    P /= np.trace(P)
+    return P
+</code></pre>
+  <p>
+    Un esquema de arranque alternativo puede acelerar o diversificar la convergencia
+    del procedimiento SCF. Esto resulta útil para estudiar la sensibilidad del método
+    Hartree–Fock a las condiciones iniciales.
+  </p>
+</section>
+
+<section>
+  <h2>Guía rápida de colaboración</h2>
   <ul>
-    <li><b>Nuevas integrales:</b> crear rutinas que calculen integrales de dos electrones
-        incluyendo orbitales <i>p</i>.</li>
-    <li><b>Mejor convergencia SCF:</b> implementar métodos de mezcla o aceleración DIIS.</li>
-    <li><b>Densidad inicial mejorada:</b> probar estrategias alternativas para construir la
-        matriz de densidad inicial \( P \).</li>
-    <li><b>Comparaciones de referencia:</b> integrar scripts que validen los resultados contra
-        programas como <code>PySCF</code> o <code>Psi4</code>.</li>
+    <li>Coloca tus scripts en la carpeta <code>examples/</code> con un nombre descriptivo.</li>
+    <li>Documenta los cambios en <code>README.md</code> o crea un archivo de notas.</li>
+    <li>Prueba tus modificaciones con casos simples antes de extenderlas.</li>
+    <li>Abre un <em>pull request</em> cuando el código sea estable y replicable.</li>
+    <li>Describe brevemente la motivación física o numérica de tu contribución.</li>
   </ul>
 </section>
 
 <section>
-  <h2>Ideas para extender el módulo de Numerov</h2>
+  <h2>Objetivos de la etapa</h2>
   <ul>
-    <li><b>Nuevos potenciales:</b> implementar funciones como \( V(x)=ax^4+bx^2 \) o
-        \( V(x)=-V_0 e^{-\alpha x^2} \).</li>
-    <li><b>Estados excitados:</b> desarrollar rutinas para encontrar y normalizar estados con nodos.</li>
-    <li><b>Visualización:</b> integrar <code>matplotlib</code> o <code>plotly</code> para
-        generar gráficas interactivas.</li>
-    <li><b>Comparaciones analíticas:</b> verificar la precisión frente a soluciones conocidas
-        del oscilador armónico y el átomo de hidrógeno.</li>
+    <li>Aprender a modificar y extender la base de código existente.</li>
+    <li>Experimentar con nuevos modelos de potencial e integración.</li>
+    <li>Analizar la sensibilidad del algoritmo a las condiciones iniciales.</li>
+    <li>Aplicar pensamiento crítico para diseñar y validar mejoras.</li>
   </ul>
-</section>
-
-<section>
-  <h2>Cómo contribuir</h2>
-  <p>Para añadir una nueva característica o mejora, crea una rama y envía tus cambios:</p>
-  <pre><code>git checkout -b feature/nueva_funcionalidad
-git commit -am "Implementa nueva rutina de integrales"
-git push origin feature/nueva_funcionalidad</code></pre>
-
-  <p>
-    Incluye comentarios claros, pruebas básicas y una breve descripción en el
-    <code>README.md</code>. Las contribuciones pueden enviarse como <em>pull requests</em>.
-  </p>
 </section>
 
 <footer>
-  Proyecto libre de enseñanza — Universidad de Sonora, 2025
+  Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
 </footer>
 
 </body>
