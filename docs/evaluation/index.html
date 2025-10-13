@@ -35,12 +35,6 @@ button.back{
 }
 button.back:hover{background:#4490e6;}
 ul{max-width:850px;margin:auto;}
-a{
-  color:#9bd3ff;
-  text-decoration:none;
-  font-weight:600;
-}
-a:hover{text-decoration:underline;}
 blockquote{
   border-left:3px solid var(--accent);
   padding-left:1rem;
@@ -72,81 +66,117 @@ footer{
   padding:.8rem 1.2rem;
   width:100%;
   transition:background .2s,border .2s;
+  cursor:pointer;
 }
 .pdf-link:hover{
   background:#253348;
   border-color:var(--accent);
 }
+#viewer-section{
+  display:none;
+  text-align:center;
+}
+#pdf-embed{
+  width:100%;
+  height:85vh;
+  border:none;
+  border-radius:12px;
+  margin-top:1rem;
+}
 </style>
 </head>
 <body>
 
-<button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
+<!-- Main menu -->
+<section id="menu-section">
+  <button class="back" onclick="window.location.href='../index.html'">← Volver a la pirámide</button>
 
-<h1>Evaluar — Documentación y revisión crítica</h1>
+  <h1>Evaluar — Documentación y revisión crítica</h1>
 
-<section>
-  <p>
-    En la etapa de <strong>Evaluar</strong> se examina críticamente la calidad,
-    coherencia y eficiencia de los métodos implementados. Este nivel implica
-    no sólo comprender y aplicar, sino también <em>juzgar</em> y <em>defender</em>
-    las decisiones tomadas durante el desarrollo del código.
-  </p>
+  <section>
+    <p>
+      En la etapa de <strong>Evaluar</strong> se examina críticamente la calidad,
+      coherencia y eficiencia de los métodos implementados. Este nivel implica
+      no sólo comprender y aplicar, sino también <em>juzgar</em> y <em>defender</em>
+      las decisiones tomadas durante el desarrollo del código.
+    </p>
 
-  <blockquote>
-    Evaluar es comprender al nivel de la estructura: cuestionar las suposiciones,
-    justificar las elecciones y medir el impacto de cada aproximación.
-  </blockquote>
+    <blockquote>
+      Evaluar es comprender al nivel de la estructura: cuestionar las suposiciones,
+      justificar las elecciones y medir el impacto de cada aproximación.
+    </blockquote>
 
-  <p>
-    Aquí se reúnen los documentos técnicos que explican de forma exhaustiva
-    la implementación del método de Numerov y del algoritmo de Hartree–Fock.
-    Cada uno analiza los fundamentos físicos, las decisiones de diseño y
-    las estrategias numéricas utilizadas.
-  </p>
+    <p>
+      Aquí se reúnen los documentos técnicos que explican de forma exhaustiva
+      la implementación del método de Numerov y del algoritmo de Hartree–Fock.
+      Cada uno analiza los fundamentos físicos, las decisiones de diseño y
+      las estrategias numéricas utilizadas.
+    </p>
+  </section>
+
+  <section>
+    <h2>Documentación disponible</h2>
+    <p>
+      Cada guía puede visualizarse directamente en esta página o descargarse
+      para una lectura detallada.
+    </p>
+
+    <div class="pdf-menu">
+      <div class="pdf-link" onclick="showPDF('numerov_implementacion.pdf')">
+        📘 <strong>Guía completa del método de Numerov</strong><br>
+        <small>Explicación detallada línea por línea del código, análisis físico
+        del mallado logarítmico y discusión de la estabilidad numérica.</small>
+      </div>
+
+      <div class="pdf-link" onclick="showPDF('hf_implementacion.pdf')">
+        📗 <strong>Guía del algoritmo de Hartree–Fock</strong><br>
+        <small>Revisión crítica del esquema SCF, uso de la base STO-3G y análisis
+        del comportamiento de convergencia.</small>
+      </div>
+
+      <div class="pdf-link" onclick="showPDF('comparative_notes.pdf')">
+        📙 <strong>Notas comparativas y validación</strong><br>
+        <small>Comparación entre resultados analíticos y numéricos, discusión
+        sobre precisión, errores sistemáticos y límites del modelo.</small>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Objetivo de esta etapa</h2>
+    <ul>
+      <li>Identificar fortalezas y debilidades en la implementación de los métodos.</li>
+      <li>Evaluar la estabilidad numérica y el costo computacional de cada enfoque.</li>
+      <li>Cuantificar errores y discutir su origen físico o matemático.</li>
+      <li>Proponer mejoras o líneas de investigación futura.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
+  </footer>
 </section>
 
-<section>
-  <h2>Documentación disponible</h2>
-  <p>
-    Cada guía puede visualizarse directamente en esta página o descargarse
-    para una lectura detallada.
-  </p>
-
-  <div class="pdf-menu">
-    <a class="pdf-link" href="numerov_implementacion.pdf" target="_blank">
-      📘 <strong>Guía completa del método de Numerov</strong><br>
-      <small>Explicación detallada línea por línea del código, análisis físico
-      del mallado logarítmico y discusión de la estabilidad numérica.</small>
-    </a>
-
-    <a class="pdf-link" href="hf_implementacion.pdf" target="_blank">
-      📗 <strong>Guía del algoritmo de Hartree–Fock</strong><br>
-      <small>Revisión crítica del esquema SCF, uso de la base STO-3G y análisis
-      del comportamiento de convergencia.</small>
-    </a>
-
-    <a class="pdf-link" href="comparative_notes.pdf" target="_blank">
-      📙 <strong>Notas comparativas y validación</strong><br>
-      <small>Comparación entre resultados analíticos y numéricos, discusión
-      sobre precisión, errores sistemáticos y límites del modelo.</small>
-    </a>
-  </div>
+<!-- Viewer -->
+<section id="viewer-section">
+  <button class="back" onclick="goBack()">← Volver a la lista</button>
+  <embed id="pdf-embed" type="application/pdf" src="">
 </section>
 
-<section>
-  <h2>Objetivo de esta etapa</h2>
-  <ul>
-    <li>Identificar fortalezas y debilidades en la implementación de los métodos.</li>
-    <li>Evaluar la estabilidad numérica y el costo computacional de cada enfoque.</li>
-    <li>Cuantificar errores y discutir su origen físico o matemático.</li>
-    <li>Proponer mejoras o líneas de investigación futura.</li>
-  </ul>
-</section>
-
-<footer>
-  Proyecto “Explorando sistemas cuánticos en Python” — Universidad de Sonora, 2025
-</footer>
+<script>
+function showPDF(path){
+  document.getElementById('menu-section').style.display='none';
+  document.getElementById('viewer-section').style.display='block';
+  document.getElementById('pdf-embed').src=path;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goBack(){
+  document.getElementById('viewer-section').style.display='none';
+  document.getElementById('menu-section').style.display='block';
+  document.getElementById('pdf-embed').src='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
 
 </body>
 </html>
