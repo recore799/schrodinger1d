@@ -1,100 +1,74 @@
-# Numerov Algorithm
+# 🧭 Explorando sistemas cuánticos en Python  
+**Una guía pedagógica basada en la Taxonomía de Bloom**
 
-A Python implementation of the Numerov algorithm for solving radial Schrödinger equations for quantum systems.
+> Proyecto presentado en el Congreso Nacional de Física — Universidad de Sonora, 2025
 
+---
 
-## DOCUMENTATION
+## 🌌 Descripción general
 
-[Metodo de Numerov](docs/numerov.pdf)
+**Explorando sistemas cuánticos en Python** es un proyecto educativo y de investigación que combina  
+programación científica con pedagogía moderna. Su propósito es ofrecer una introducción estructurada  
+a la mecánica cuántica computacional mediante la **Taxonomía de Bloom** como modelo de aprendizaje.
 
-## Project Structure
+El proyecto se desarrolla como una guía progresiva, donde cada nivel de la pirámide representa una etapa  
+del pensamiento científico y computacional:
 
-```
-.
-├── src/                   # Working code
-│   ├── numerov.py
-│
-├── examples/              # Fully functional examples
-│   ├── ATOM_states.py     # Hydrogen atom energy levels
-│   └── HO_states.py       # Harmonic oscillator levels
-│
-├── test/                  # Under development - may be broken
-│   ├── numerov_test.py
-│   └── test_hydrogen.py   # Dev space
-│   └── storage.py         # Old implementations
-│
-└── docs/                  # Documentation
+| Nivel | Enfoque | Contenido principal |
+|:------|:---------|:--------------------|
+| **Recordar** | Fundamentos teóricos | Oscilador armónico, átomo de hidrógeno, método variacional |
+| **Comprender** | Estructura conceptual | Derivaciones, interpretación física y formulación numérica |
+| **Aplicar** | Ejecución práctica | Cálculo y visualización de funciones de onda y densidades |
+| **Analizar** | Estudio crítico | Comparación de métodos y precisión numérica |
+| **Evaluar** | Revisión y documentación | Discusión de limitaciones y análisis de resultados |
+| **Crear** | Extensión del conocimiento | Modificación, colaboración y desarrollo de nuevos módulos |
 
-```
+---
 
-## Example Outputs
+## 🧠 Objetivos del proyecto
 
-### Hydrogen Atom Energy Levels (`ATOM_states.py`)
+- Integrar física cuántica, programación y pedagogía en un entorno accesible.  
+- Proveer ejemplos claros de implementación del **método de Numerov** y **Hartree–Fock**.  
+- Fomentar el pensamiento crítico y la autonomía investigativa en el aula.  
+- Ofrecer materiales abiertos, reproducibles y estéticamente coherentes.  
 
-```text
-Testing hydrogen_atom for 6 states with l=0
---------------------------------------------------------------------------------
-  n     Energy (Ry)     Theoretical           Error   Iterations    Time (ms)
---------------------------------------------------------------------------------
-  1     -1.00000000       -1.000000      2.3248e-10           11        6.081
-  2     -0.25000000       -0.250000      1.2138e-10           22       13.237
-  3     -0.11111111       -0.111111      1.9830e-10           12        6.143
-  4     -0.06250000       -0.062500      3.0494e-10           12        6.026
-  5     -0.04000000       -0.040000      4.4468e-10           15        7.944
-  6     -0.02777778       -0.027778      6.1631e-10           15        8.104
---------------------------------------------------------------------------------
-```
+---
 
+## 🚀 Cómo explorar el proyecto
 
-### ionized Helium Atom ground state and first excited state (`HEp_states.py`)
+Puedes navegar el sitio directamente desde GitHub Pages:  
+👉 **[https://recore799.github.io/schrodinger1d/](https://recore799.github.io/schrodinger1d/)**  
 
-```text
-Testing ionized Helium atom for 2 states with l=0
---------------------------------------------------------------------------------
-  n     Energy (Ry)     Theoretical           Error   Iterations    Time (ms)
---------------------------------------------------------------------------------
-  1     -4.00000000       -4.000000      1.0008e-09            9        5.686
-  2     -1.00000000       -1.000000      6.2772e-10           12        7.611
---------------------------------------------------------------------------------
-```
+Cada nivel de la pirámide es interactivo y contiene teoría, código y documentación correspondiente.  
 
-### Harmonic Oscillator Levels (`HO_states.py`)
+También puedes clonar el repositorio para explorar los archivos localmente:
 
-```text
-Testing harmonic_oscillator for 6 states
-------------------------------------------------------------------------------
-  n     Energy (ħω)     Theoretical           Error   Iterations    Time (ms)
-------------------------------------------------------------------------------
-  0      0.50000029      0.50000000        2.86e-07           41        8.569
-  1      1.50000067      1.50000000        6.69e-07           41        8.722
-  2      2.50000092      2.50000000        9.18e-07           41        8.882
-  3      3.50000109      3.50000000        1.09e-06           41        8.753
-  4      4.50000122      4.50000000        1.22e-06           41        9.168
-  5      5.50000133      5.50000000        1.33e-06           41        8.909
-------------------------------------------------------------------------------
-```
+```bash
+git clone https://github.com/recore799/schrodinger1d.git
+cd schrodinger1d
 
+## Métodos implementados
 
-## Use library
+### Método de Numerov
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/recore799/schrodinger1d.git
-   cd schrodinger1d
-   ```
+Resolución de la ecuación de Schrödinger unidimensional, aplicado a:
 
-2. Run the examples:
-   ```bash
-   python examples/ATOM_states.py
-   python examples/HO_states.py
-   ```
+- El oscilador armónico.
 
-## Dependencies
+- El átomo de hidrógeno (malla logarítmica).
 
-- Python 3.6+
-- NumPy
-- Matplotlib (for visualization examples)
+- Otros potenciales definidos por el usuario.
 
-## License
+### Método de Hartree–Fock restringido (RHF)
 
-[GPL License](LICENSE)
+- Cálculo de integrales atómicas con funciones gaussianas (STO-3G).
+
+- Construcción del operador de Fock y diagonalización autoconsistente.
+
+- Implementación básica del procedimiento SCF.
+
+## Filosofía pedagógica
+
+Este proyecto busca demostrar que la enseñanza de la mecánica cuántica puede apoyarse en la experimentación computacional y en la organización cognitiva de Bloom.
+Cada sección está pensada para guiar al estudiante desde la comprensión teórica
+hasta la creación de su propio código y análisis crítico de los resultados.
