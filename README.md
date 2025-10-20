@@ -46,6 +46,7 @@ También puedes clonar el repositorio para explorar los archivos localmente:
 ```bash
 git clone https://github.com/recore799/schrodinger1d.git
 cd schrodinger1d
+```
 
 ## Métodos implementados
 
